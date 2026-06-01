@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeChat - 巡境 XÚNJÌNG</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, sans-serif; user-select: none; }
+        body { width: 100vw; height: 100vh; overflow: hidden; background: radial-gradient(circle at top right, #3b5998, #1a2a6c, #112); display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        .lang-en .zh { display: none; } .lang-zh .en { display: none; }
+        
+        .mac-window { width: 850px; height: 600px; background: #f5f5f5; border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.2) inset; display: flex; flex-direction: column; overflow: hidden; transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); animation: popIn 0.4s forwards; }
+        @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .title-bar { height: 28px; background: #ececec; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #ddd; transition: background 0.6s; }
+        .traffic-lights { display: flex; gap: 8px; width: 60px; } .traffic-lights div { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+        .close { background: #ff5f56; } .minimize { background: #ffbd2e; } .maximize { background: #27c93f; }
+        .system-title { font-size: 12px; font-weight: bold; color: #10b981; opacity: 0; transition: opacity 0.6s; }
+
+        .wechat-body { display: flex; height: calc(100% - 28px); }
+        .sidebar-icons { width: 60px; background: #2e2e2e; display: flex; flex-direction: column; align-items: center; padding-top: 20px; gap: 25px; z-index: 5; }
+        .avatar { width: 40px; height: 40px; border-radius: 4px; background: #a8edea; display: flex; justify-content: center; align-items: center; font-size: 18px; font-weight: bold; color: #333; }
+        .icon-btn { color: #888; font-size: 24px; cursor: pointer; transition: color 0.2s; } .icon-btn.active, .icon-btn:hover { color: #07c160; }
+
+        .source-list { width: 0; background: #1e1e1e; border-right: 1px solid #111; display: flex; flex-direction: column; overflow: hidden; transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); white-space: nowrap; }
+        .source-header { font-size: 11px; color: #666; padding: 15px; font-weight: bold; letter-spacing: 1px; }
+        .source-item { padding: 12px 15px; color: #aaa; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+        .source-item.active { background: #374151; color: #fff; border-left: 3px solid #10b981; }
+        .badge-new { background: #ef4444; color: white; font-size: 9px; padding: 2px 5px; border-radius: 10px; font-weight: bold; }
+
+        .chat-list { width: 250px; background: #e6e5e5; border-right: 1px solid #dcdcdc; display: flex; flex-direction: column; flex-shrink: 0; }
+        .source-group { display: none; flex-direction: column; height: 100%; } .source-group.active { display: flex; }
+        .search-bar { padding: 15px; background: #f5f5f5; } .search-bar input { width: 100%; padding: 6px 12px; border-radius: 4px; border: 1px solid #ccc; outline: none; }
+        .chat-item { display: flex; padding: 12px 15px; cursor: pointer; align-items: center; gap: 10px; } .chat-item.active { background: #c6c6c6; }
+        .chat-avatar { width: 40px; height: 40px; border-radius: 4px; background-color: #fff; display: flex; justify-content: center; align-items: center; font-size: 20px; }
+        .chat-info { flex: 1; overflow: hidden; } .chat-name { font-size: 14px; color: #000; margin-bottom: 4px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .chat-preview { font-size: 12px; color: #888; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+
+        .chat-main { flex: 1; background: #f5f5f5; display: flex; flex-direction: column; position: relative; }
+        .chat-header { height: 60px; border-bottom: 1px solid #e7e7e7; display: flex; align-items: center; padding: 0 20px; font-size: 18px; font-weight: 500; }
+        .recovered-banner { background-color: #fef2f2; color: #b91c1c; font-size: 12px; padding: 8px 20px; border-bottom: 1px solid #fecaca; display: none; align-items: center; gap: 8px; font-family: monospace; }
+        .chat-history { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .chat-view { display: none; height: 100%; flex-direction: column; } .chat-view.active { display: flex; }
+
+        .msg-row { display: flex; width: 100%; margin-bottom: 5px; } .msg-time { text-align: center; font-size: 12px; color: #b0b0b0; margin: 10px 0; width: 100%; }
+        .msg-left { justify-content: flex-start; } .msg-right { justify-content: flex-end; }
+        .msg-avatar { width: 36px; height: 36px; border-radius: 4px; background: #fff; display: flex; justify-content: center; align-items: center; font-size: 16px; flex-shrink: 0; font-weight: bold; color: #555; }
+        .msg-left .msg-avatar { margin-right: 10px; } .msg-right .msg-avatar { margin-left: 10px; background: #a8edea; } 
+        .bubble { max-width: 65%; padding: 10px 14px; border-radius: 4px; font-size: 14px; line-height: 1.5; position: relative; word-wrap: break-word; }
+        .msg-left .bubble { background: #fff; color: #000; border: 1px solid #ebebeb; } .msg-right .bubble { background: #95ec69; color: #000; }
+        
+        .voice-text-container { margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e5e5; }
+        .voice-text-label { font-size: 11px; color: #999; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+        .voice-text-content { font-size: 14px; color: #333; line-height: 1.5; }
+        .toggle-btn { margin-top: 8px; font-size: 11px; color: #07c160; cursor: pointer; display: inline-block; transition: color 0.2s; }
+        
+        .player-thought { align-self: center; background: rgba(0,0,0,0.05); color: #666; padding: 5px 15px; border-radius: 15px; font-size: 12px; font-style: italic; margin-top: 10px; text-align: center;}
+        .chat-input-area { height: 140px; border-top: 1px solid #e7e7e7; background: #f5f5f5; display: flex; flex-direction: column; }
+        .input-tools { height: 40px; display: flex; align-items: center; padding: 0 15px; gap: 15px; color: #888; font-size: 20px; }
+        .input-box { flex: 1; padding: 0 15px; border: none; background: transparent; resize: none; outline: none; font-size: 14px; }
+        .send-btn { align-self: flex-end; margin: 0 15px 15px 0; padding: 6px 20px; background: #e5e5e5; color: #07c160; border: none; border-radius: 4px; cursor: pointer; }
+        .chat-input-disabled { height: 60px; border-top: 1px solid #e7e7e7; background: #ececec; display: none; justify-content: center; align-items: center; color: #999; font-size: 13px; font-family: monospace; }
+
+        body.forensic-mode .mac-window { width: 1050px; } body.forensic-mode .source-list { width: 200px; }
+        body.forensic-mode .title-bar { background: #2d2d2d; color: #ccc; border-bottom: 1px solid #111; }
+        body.forensic-mode .system-title { opacity: 1; } body.forensic-mode .chat-input-area { display: none; }
+        body.forensic-mode .chat-input-disabled { display: flex; } body.forensic-mode .recovered-banner { display: flex; }
+        body.forensic-mode .search-bar input { background: #111; color:#0f0; border-color: #333; font-family: monospace;}
+        body.forensic-mode .search-bar input::placeholder { color:#0f0; opacity: 0.5;}
+    </style>
+</head>
+<body id="body-container">
+
+    <div class="mac-window" id="mac-window">
+        <div class="title-bar">
+            <div class="traffic-lights"><div class="close"></div><div class="minimize"></div><div class="maximize"></div></div>
+            <div class="system-title">CHAT FORENSIC ARCHIVE V2.1</div>
+            <div style="width: 60px;"></div>
+        </div>
+
+        <div class="wechat-body">
+            <div class="sidebar-icons">
+                <div class="avatar">林</div>
+                <div class="icon-btn active">💬</div><div class="icon-btn">👤</div><div class="icon-btn">📁</div>
+                <div style="flex:1"></div><div class="icon-btn" style="margin-bottom: 20px;">⚙️</div>
+            </div>
+
+            <div class="source-list">
+                <div class="source-header">SOURCE DATABASE</div>
+                <div class="source-item active" id="btn-source-lin" onclick="switchSource('lin')"><span>💻 LIN-MacBook</span></div>
+                <div class="source-item" id="btn-source-htadmin" onclick="switchSource('htadmin')" style="display:none;">
+                    <span>🖥️ HTADMIN-PC</span><span class="badge-new">NEW</span>
+                </div>
+            </div>
+
+            <div class="chat-list">
+                <div class="search-bar">
+                    <input type="text" id="wechatSearchInput" onkeypress="handleWeChatSearch(event)">
+                </div>
+                
+                <div class="source-group active" id="list-lin">
+                    <div class="chat-item" onclick="switchChat('mentor', this, 'lin')">
+                        <div class="chat-avatar" style="background:#e8f4f8;">👨‍🏫</div>
+                        <div class="chat-info"><div class="chat-name"><span class="zh">导师</span><span class="en">Mentor</span></div><div class="chat-preview"><span class="zh">好的老师，我会多进行调研的。</span><span class="en">Okay Professor, I will do more research.</span></div></div>
+                    </div>
+                    <div class="chat-item" onclick="switchChat('village_normal', this, 'lin')">
+                        <div class="chat-avatar" style="background:#fbeee6;">🏘️</div>
+                        <div class="chat-info"><div class="chat-name"><span class="zh">鹤田村村民群(42)</span><span class="en">Village Group(42)</span></div><div class="chat-preview"><span class="zh">阿顺: 又塌了？</span><span class="en">Ah Shun: Collapsed again?</span></div></div>
+                    </div>
+                    <div class="chat-item active" onclick="switchChat('ayong', this, 'lin')">
+                        <div class="chat-avatar" style="background:#eef8e6;">🧑🏽</div>
+                        <div class="chat-info"><div class="chat-name"><span class="zh">阿勇</span><span class="en">Ah Yong</span></div><div class="chat-preview"><span class="zh">我跟你说。那天有人搬东西。</span><span class="en">I'm telling you. Someone was moving things.</span></div></div>
+                    </div>
+                    <div class="chat-item" onclick="switchChat('family', this, 'lin')">
+                        <div class="chat-avatar" style="background:#f8e6e8;">👨‍👩‍👧‍👦</div>
+                        <div class="chat-info"><div class="chat-name"><span class="zh">相亲相爱一家人</span><span class="en">Loving Family</span></div><div class="chat-preview"><span class="zh">爸爸: 好</span><span class="en">Dad: Good</span></div></div>
+                    </div>
+                </div>
+
+                <div class="source-group" id="list-htadmin">
+                    <div class="chat-item" onclick="switchChat('village_recovered', this, 'htadmin')">
+                        <div class="chat-avatar" style="background:#fbeee6;">🏘️</div>
+                        <div class="chat-info"><div class="chat-name"><span class="zh">鹤田村村民群(42)</span><span class="en">Village Group(42)</span></div><div class="chat-preview"><span class="zh">老李: 排水渠那边别走。</span><span class="en">Old Li: Don't go near the drainage ditch.</span></div></div>
+                    </div>
+                    <div class="chat-item" onclick="switchChat('chenhao', this, 'htadmin')">
+                        <div class="chat-avatar" style="background:#e8e8e8;">豪</div>
+                        <div class="chat-info"><div class="chat-name"><span class="zh">陈豪</span><span class="en">Chen Hao</span></div><div class="chat-preview">[图片 / Image] IMG_4431.JPG</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-main">
+                
+                <div id="chat-search-results" class="chat-view">
+                    <div class="chat-header"><span class="zh">搜索结果: "排水渠" (共 11 条记录)</span><span class="en">Search Results: "Drainage Ditch" (11 records)</span></div>
+                    <div class="recovered-banner" style="display:flex;">⚠️ <span class="zh">跨数据源深度检索完成 | 包含已删除及归档的历史会话</span><span class="en">Cross-source deep search complete | Includes deleted and archived sessions</span></div>
+                    
+                    <div class="chat-history">
+                        <div class="msg-time">2023-08-17 09:13 (<span class="zh">来源: 村民群缓存</span><span class="en">Source: Village Group Cache</span>)</div>
+                        <div class="msg-row msg-left">
+                            <div class="msg-avatar" style="background:#ddd;"><span class="zh">李</span><span class="en">Li</span></div>
+                            <div>
+                                <div style="font-size:12px; color:#888; margin-bottom:4px; margin-left:4px;"><span class="zh">老李</span><span class="en">Old Li</span> 09:13</div>
+                                <div class="bubble"><span class="zh">排水渠那边别走。</span><span class="en">Don't go near the drainage ditch.</span></div>
+                            </div>
+                        </div>
+
+                        <div class="msg-time">2019-04-12 (<span class="zh">来源: HTADMIN-PC 归档数据</span><span class="en">Source: HTADMIN-PC Archived</span>)</div>
+                        <div class="msg-row msg-left">
+                            <div class="msg-avatar" style="background:#fbeee6;"><span class="zh">委</span><span class="en">VC</span></div>
+                            <div>
+                                <div style="font-size:12px; color:#888; margin-bottom:4px; margin-left:4px;"><span class="zh">村委</span><span class="en">Village Comm</span> 09:30</div>
+                                <div class="bubble"><span class="zh">北坡最近要修路。</span><span class="en">North Slope is fixing roads recently.</span></div>
+                            </div>
+                        </div>
+                        <div class="msg-row msg-left">
+                            <div class="msg-avatar" style="background:#e8e8e8;"><span class="zh">豪</span><span class="en">Hao</span></div>
+                            <div>
+                                <div style="font-size:12px; color:#888; margin-bottom:4px; margin-left:4px;"><span class="zh">陈豪</span><span class="en">Chen Hao</span> 09:37</div>
+                                <div class="bubble"><span class="zh">那巡境路线得改了。</span><span class="en">Then the patrol route needs to change.</span></div>
+                            </div>
+                        </div>
+
+                        <div class="player-thought"><span class="zh">玩家笔记："原来巡境路线在2019年因为北坡修路改过……和陈豪提到的排水渠有关？"</span><span class="en">Player Note: So the patrol route changed in 2019 due to roadworks at North Slope... is it related to the drainage ditch?</span></div>
+                        <div style="text-align:center; color:#999; font-size:12px; margin-top:20px; font-family: monospace;">
+                            [ <span class="zh">余下 8 条记录因扇区损坏无法读取</span><span class="en">Remaining 8 records unreadable due to sector damage</span> ]
+                        </div>
+                    </div>
+                    <div class="chat-input-disabled">[ FORENSIC SEARCH MODE ]</div>
+                </div>
+
+                <div id="chat-mentor" class="chat-view">
+                    <div class="chat-header"><span class="zh">导师</span><span class="en">Mentor</span></div>
+                    <div class="chat-history">
+                        <div class="msg-time">2-14 14:03</div>
+                        <div class="msg-row msg-left"><div class="msg-avatar">👨‍🏫</div><div class="bubble"><span class="zh">到村了吗？</span><span class="en">Arrived at the village?</span></div></div>
+                        <div class="msg-time">14:07</div>
+                        <div class="msg-row msg-right"><div class="bubble"><span class="zh">到了。</span><span class="en">Arrived.</span></div><div class="msg-avatar">林</div></div>
+                        <div class="msg-time">14:09</div>
+                        <div class="msg-row msg-left"><div class="msg-avatar">👨‍🏫</div><div class="bubble"><span class="zh">你先不要急着写结论。仪式研究最怕阴谋化。不过……如果真有非正式经济活动，也值得观察。你多看看路线变化。</span><span class="en">Don't rush to conclusions. Ritual studies fear conspiracy theories the most. However... if there really is informal economic activity, it's worth observing. Pay attention to route changes.</span></div></div>
+                        <div class="msg-time">14:11</div>
+                        <div class="msg-row msg-right"><div class="bubble"><span class="zh">好的老师，我会多进行调研的。</span><span class="en">Okay Professor, I will do more research.</span></div><div class="msg-avatar">林</div></div>
+                    </div>
+                    <div class="chat-input-area"><div class="input-tools"><span>😊</span><span>📁</span><span>✂️</span></div><textarea class="input-box"></textarea><button class="send-btn">SEND</button></div>
+                    <div class="chat-input-disabled">[ LOCAL CACHE READ-ONLY ]</div>
+                </div>
+
+                <div id="chat-village_normal" class="chat-view">
+                    <div class="chat-header"><span class="zh">鹤田村村民群(42)</span><span class="en">Village Group(42)</span></div>
+                    <div class="chat-history">
+                        <div class="msg-time">2023-08-17 09:13</div>
+                        <div class="msg-row msg-left"><div class="msg-avatar" style="background:#ddd;"><span class="zh">李</span><span class="en">Li</span></div><div class="bubble"><span class="zh">排水渠那边别走。路烂。</span><span class="en">Don't go near the drainage ditch. Road is bad.</span></div></div>
+                        <div class="msg-row msg-left"><div class="msg-avatar" style="background:#eee;"><span class="zh">顺</span><span class="en">Shn</span></div><div class="bubble"><span class="zh">又塌了？</span><span class="en">Collapsed again?</span></div></div>
+                        <div class="msg-row msg-left"><div class="msg-avatar" style="background:#e8c1c1;"><span class="zh">珍</span><span class="en">Zhn</span></div><div class="bubble"><span class="zh">哪有排水渠？</span><span class="en">Where is the drainage ditch?</span></div></div>
+                        <div class="msg-row msg-left"><div class="msg-avatar" style="background:#ddd;"><span class="zh">李</span><span class="en">Li</span></div><div class="bubble"><span class="zh">你们年轻人不知道。</span><span class="en">You young people wouldn't know.</span></div></div>
+                    </div>
+                    <div class="chat-input-area"><div class="input-tools"><span>😊</span><span>📁</span><span>✂️</span></div><textarea class="input-box"></textarea><button class="send-btn">SEND</button></div>
+                    <div class="chat-input-disabled">[ LOCAL CACHE READ-ONLY ]</div>
+                </div>
+
+                <div id="chat-ayong" class="chat-view active">
+                    <div class="chat-header"><span class="zh">阿勇</span><span class="en">Ah Yong</span></div>
+                    <div class="chat-history">
+                        <div class="msg-time">2-15 02:31</div>
+                        <div class="msg-row msg-left"><div class="msg-avatar">🧑🏽</div><div class="bubble"><span class="zh">你睡了吗？</span><span class="en">Are you asleep?</span></div></div>
+                        <div class="msg-time">02:38</div>
+                        <div class="msg-row msg-left">
+                            <div class="msg-avatar">🧑🏽</div>
+                            <div class="bubble">
+                                <div style="display:flex; align-items:center; gap:10px; cursor:pointer;"><span>🔊</span> 49"</div>
+                                <div class="voice-text-container">
+                                    <div class="voice-text-label"><span>✓</span> <span class="zh">转换完成</span><span class="en">Transcribed</span></div>
+                                    <div class="voice-text-content" id="ayong-transcription"><span class="zh">我跟你说。那天有人搬东西。北坡那边。巡境没结束，已经在搬……黑袋子。很重。</span><span class="en">I'm telling you. Someone was moving things that day. Over at North Slope. The patrol wasn't even over, and they were already moving... black bags. Very heavy.</span></div>
+                                    <div class="toggle-btn" onclick="toggleTranscription(this)">[ <span class="zh">系统工具：切换低置信度转录版本</span><span class="en">System Tool: Switch to Low Confidence Transcript</span> ]</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area"><div class="input-tools"><span>😊</span><span>📁</span><span>✂️</span></div><textarea class="input-box"></textarea><button class="send-btn">SEND</button></div>
+                    <div class="chat-input-disabled">[ LOCAL CACHE READ-ONLY ]</div>
+                </div>
+
+                <div id="chat-family" class="chat-view">
+                    <div class="chat-header"><span class="zh">相亲相爱一家人</span><span class="en">Loving Family</span></div>
+                    <div class="chat-history">
+                        <div class="msg-time"><span class="zh">昨天</span><span class="en">Yesterday</span> 10:22</div>
+                        <div class="msg-row msg-left"><div class="msg-avatar" style="background:#bfe6ff;"><span class="zh">爸</span><span class="en">Dad</span></div><div class="bubble"><span class="zh">空调坏了</span><span class="en">The AC is broken</span></div></div>
+                        <div class="msg-row msg-left"><div class="msg-avatar" style="background:#ffcfdf;"><span class="zh">妈</span><span class="en">Mom</span></div><div class="bubble"><span class="zh">啊？</span><span class="en">Ah?</span></div></div>
+                        <div class="msg-row msg-right"><div class="bubble"><span class="zh">我打电话给维修人员了，大概下午三点到</span><span class="en">I called the repairman, arriving around 3 PM</span></div><div class="msg-avatar">林</div></div>
+                        <div class="msg-row msg-left"><div class="msg-avatar" style="background:#bfe6ff;"><span class="zh">爸</span><span class="en">Dad</span></div><div class="bubble"><span class="zh">好</span><span class="en">Good</span></div></div>
+                    </div>
+                    <div class="chat-input-area"><div class="input-tools"><span>😊</span><span>📁</span><span>✂️</span></div><textarea class="input-box"></textarea><button class="send-btn">SEND</button></div>
+                    <div class="chat-input-disabled">[ LOCAL CACHE READ-ONLY ]</div>
+                </div>
+
+                <div id="chat-village_recovered" class="chat-view">
+                    <div class="chat-header"><span class="zh">鹤田村村民群(42)</span><span class="en">Village Group(42)</span></div>
+                    <div class="recovered-banner">⚠️ 来源提示: Recovered Session | LAST ACTIVE: 02/14 03:18</div>
+                    <div class="chat-history">
+                        <div class="msg-time">2023-08-17 09:13</div>
+                        <div class="msg-row msg-left"><div class="msg-avatar" style="background:#ddd;"><span class="zh">李</span><span class="en">Li</span></div><div class="bubble"><span class="zh">排水渠那边别走。</span><span class="en">Don't go near the drainage ditch.</span></div></div>
+                        <div class="msg-row msg-left"><div class="msg-avatar" style="background:#eee;"><span class="zh">顺</span><span class="en">Shn</span></div><div class="bubble"><span class="zh">又塌了？</span><span class="en">Collapsed again?</span></div></div>
+                        <div class="player-thought"><span class="zh">玩家笔记："哦... 难道排水渠现在还在？"</span><span class="en">Player Note: Oh... is the drainage ditch still there?</span></div>
+                    </div>
+                    <div class="chat-input-disabled">[ RECOVERED READ-ONLY MODE ]</div>
+                </div>
+
+                <div id="chat-chenhao" class="chat-view">
+                    <div class="chat-header"><span class="zh">陈豪</span><span class="en">Chen Hao</span></div>
+                    <div class="recovered-banner">⚠️ 来源提示: Recovered Session | LAST ACTIVE: 02/14 03:18</div>
+                    <div class="chat-history">
+                        <div class="msg-time">2-12 20:17</div>
+                        <div class="msg-row msg-left"><div class="msg-avatar" style="background:#e8e8e8;"><span class="zh">豪</span><span class="en">Hao</span></div><div class="bubble" style="color:#07c160; cursor:pointer;">[ <span class="zh">图片</span><span class="en">Image</span>：IMG_4431.JPG ]</div></div>
+                        <div class="msg-time">20:21</div>
+                        <div class="msg-time"><span class="zh">陈豪 撤回了一条消息</span><span class="en">Chen Hao recalled a message</span></div>
+                    </div>
+                    <div class="chat-input-disabled">[ RECOVERED READ-ONLY MODE ]</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="score_system.js"></script>
+    <script>
+        window.onload = function() {
+            const savedLang = localStorage.getItem('gameLanguage') || 'zh';
+            document.body.className = 'lang-' + savedLang;
+            
+            const searchInput = document.getElementById('wechatSearchInput');
+            searchInput.placeholder = savedLang === 'en' ? "Search..." : "搜索...";
+
+            if (localStorage.getItem('wechatPhase2Unlocked') === 'true') {
+                applyPhase2State();
+            } else {
+                setInterval(checkPhase2Unlock, 1000); 
+            }
+        };
+
+        function checkPhase2Unlock() {
+            if (localStorage.getItem('viewed_file021') === 'true' && 
+                localStorage.getItem('viewed_file003') === 'true' && 
+                localStorage.getItem('wechatPhase2Unlocked') !== 'true') {
+                
+                localStorage.setItem('wechatPhase2Unlocked', 'true');
+                const isEn = document.body.classList.contains('lang-en');
+                alert(isEn ? "[System Warning]\nClues [Map] and [Police Record] gathered.\nData stream parsing... External data source detected..." : "【系统警告】\n已集齐线索 [地图] 与 [报警记录]。\n数据流重新解析中... 侦测到外部数据源接入...");
+                applyPhase2State();
+                setTimeout(() => { switchSource('htadmin'); }, 800);
+            }
+        }
+
+        function applyPhase2State() {
+            document.body.classList.add('forensic-mode');
+            document.getElementById('btn-source-htadmin').style.display = 'flex';
+            const isEn = document.body.classList.contains('lang-en');
+            document.getElementById('wechatSearchInput').placeholder = isEn ? "Global Forensic Search..." : "全局取证检索...";
+        }
+
+        function handleWeChatSearch(e) {
+            if (e.key === 'Enter') {
+                const keyword = document.getElementById('wechatSearchInput').value.trim().toLowerCase();
+                if (!keyword) return;
+                const isEn = document.body.classList.contains('lang-en');
+
+                if (localStorage.getItem('wechatPhase2Unlocked') !== 'true') {
+                    alert(isEn ? "[System Prompt]\nCurrent in normal chat mode. No related records locally." : "【系统提示】\n当前为普通聊天模式，本地无相关记录。");
+                    return;
+                }
+
+                if (keyword.includes("排水渠") || keyword.includes("drainage ditch")) {
+                    document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+                    document.querySelectorAll('.chat-view').forEach(view => view.classList.remove('active'));
+                    document.getElementById('chat-search-results').classList.add('active');
+                } else {
+                    alert(isEn ? "Global DB found no records for [" + keyword + "]." : "全局数据库未检索到关于 [" + keyword + "] 的记录。");
+                }
+            }
+        }
+
+        function switchSource(sourceId) {
+            document.querySelectorAll('.source-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('btn-source-' + sourceId).classList.add('active');
+            document.querySelectorAll('.source-group').forEach(group => group.classList.remove('active'));
+            const activeList = document.getElementById('list-' + sourceId);
+            activeList.classList.add('active');
+            const firstChatItem = activeList.querySelector('.chat-item');
+            if (firstChatItem) firstChatItem.click();
+        }
+
+        function switchChat(chatId, element, sourceId) {
+            document.getElementById('list-' + sourceId).querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            document.querySelectorAll('.chat-view').forEach(view => view.classList.remove('active'));
+            document.getElementById('chat-' + chatId).classList.add('active');
+        }
+
+        function toggleTranscription(btnElement) {
+            const textBox = document.getElementById('ayong-transcription');
+            const isEn = document.body.classList.contains('lang-en');
+            if (btnElement.innerText.includes('低置信度') || btnElement.innerText.includes('Low')) {
+                
+                // 计分埋点：执意听取低置信度乱码
+                if (!localStorage.getItem('scored_audio_chaos')) {
+                    if (typeof addConspiracy === 'function') addConspiracy(2, "执意听取低置信度/异常语音记录");
+                    localStorage.setItem('scored_audio_chaos', 'true');
+                }
+
+                textBox.innerHTML = isEn ? '...someone helping things... north side. Patrol not over... black bags...' : '……有人帮东西……北边那边。巡境没结束……黑袋子……';
+                textBox.style.color = '#888';
+                btnElement.innerHTML = isEn ? '[ System Warning: Restore Standard Transcript ]' : '[ 系统警告：恢复标准转录 ]';
+                btnElement.style.color = '#ff4d4f'; 
+            } else {
+                textBox.innerHTML = isEn ? "I'm telling you. Someone was moving things that day. Over at North Slope. The patrol wasn't even over, and they were already moving... black bags. Very heavy." : '我跟你说。那天有人搬东西。北坡那边。巡境没结束，已经在搬……黑袋子。很重。';
+                textBox.style.color = '#333';
+                btnElement.innerHTML = isEn ? '[ System Tool: Switch to Low Confidence Transcript ]' : '[ 系统工具：切换低置信度转录版本 ]';
+                btnElement.style.color = '#07c160'; 
+            }
+        }
+    </script>
+</body>
+</html>

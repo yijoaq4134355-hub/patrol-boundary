@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>出警记录单 - 鹤山县警务综合平台</title>
+    <style>
+        /* 全局重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 全白背景，去除截断限制，自然滚动 */
+        body {
+            background-color: #ffffff; 
+            color: #333333;
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+            overflow-y: auto; 
+            line-height: 1.6;
+        }
+
+        /* 双语显示控制 */
+        .lang-en .zh { display: none; }
+        .lang-zh .en { display: none; }
+
+        /* 顶部悬浮工具栏 */
+        .toolbar {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            height: 54px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 100;
+        }
+
+        .toolbar-title {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: bold;
+        }
+
+        .lang-btn {
+            background-color: #07c160;
+            color: #ffffff;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .lang-btn:hover {
+            background-color: #06ad56;
+        }
+
+        /* OA 电子表单主体 */
+        .document-paper {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 50px 40px 100px 40px;
+            background-color: #ffffff;
+        }
+
+        /* ------------------ 头部区域 ------------------ */
+        .doc-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .doc-header h1 {
+            font-size: 26px;
+            color: #1e293b;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .doc-header h2 {
+            font-size: 20px;
+            color: #334155;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .header-divider {
+            width: 100%;
+            height: 2px;
+            background-color: #e2e8f0;
+            margin-bottom: 25px;
+        }
+
+        /* ------------------ 扁平化数据表格 ------------------ */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+
+        .data-table th, .data-table td {
+            border: 1px solid #cbd5e1;
+            padding: 12px 16px;
+            vertical-align: middle;
+        }
+
+        .data-table .label-col {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: bold;
+            width: 18%;
+        }
+
+        .data-table .val-col {
+            color: #1e293b;
+        }
+
+        /* ------------------ 正文段落区块 ------------------ */
+        .section-title {
+            font-size: 18px;
+            color: #0f172a;
+            margin: 30px 0 12px 0;
+            font-weight: bold;
+            border-left: 4px solid #3b82f6;
+            padding-left: 10px;
+            line-height: 1.1;
+        }
+
+        .content-box {
+            font-size: 15px;
+            color: #334155;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 18px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .content-box p { margin-bottom: 8px; }
+        .content-box p:last-child { margin-bottom: 0; }
+        
+        .quote-text {
+            color: #475569;
+            font-style: italic;
+            border-left: 3px solid #cbd5e1;
+            padding-left: 12px;
+            margin: 12px 0;
+            background-color: #ffffff;
+            padding: 12px;
+        }
+
+        .note-text {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        ul, ol {
+            margin-left: 1.5em;
+            margin-bottom: 10px;
+        }
+        li { margin-bottom: 6px; }
+
+        /* ------------------ 系统备注 ------------------ */
+        .system-note {
+            background-color: #fffbeb; 
+            border: 1px dashed #f59e0b;
+            border-left: 4px solid #f59e0b;
+            padding: 18px;
+            margin: 40px 0;
+            border-radius: 4px;
+        }
+
+        .system-note-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #d97706;
+            margin-bottom: 10px;
+        }
+
+        /* ------------------ OA审批流程 ------------------ */
+        .approval-section {
+            margin-top: 50px;
+        }
+
+        .approval-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .approval-table th, .approval-table td {
+            border: 1px solid #cbd5e1;
+            padding: 16px;
+        }
+
+        .approval-table .header-row {
+            background-color: #f1f5f9;
+            font-weight: bold;
+            color: #334155;
+        }
+
+        .approval-table .role-row {
+            background-color: #ffffff;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .approval-table .status-row {
+            height: 80px;
+            vertical-align: bottom;
+            padding-bottom: 15px;
+        }
+
+        .status-name { font-weight: bold; font-size: 15px; margin-bottom: 5px; }
+        .status-blue { color: #0284c7; }   
+        .status-green { color: #16a34a; }  
+        .status-red { color: #dc2626; }    
+        
+        .status-date { font-size: 13px; color: #94a3b8; font-weight: normal; }
+
+    </style>
+</head>
+<body class="lang-zh" id="body-container">
+
+    <div class="toolbar">
+        <div class="toolbar-title">
+            <span class="zh">🛡️ 鹤山县警务综合平台 / 电子案卷预览</span>
+            <span class="en">🛡️ Heshan Police Integrated Platform / E-File Preview</span>
+        </div>
+        <button class="lang-btn" onclick="toggleLanguage()">
+            <span class="zh">🌐 切换为 English</span>
+            <span class="en">🌐 Switch to 中文</span>
+        </button>
+    </div>
+
+    <div class="document-paper">
+        
+        <div class="doc-header">
+            <h1>
+                <span class="zh">鹤山县公安局鹤田派出所</span>
+                <span class="en">Heshan County Public Security Bureau - Hetian Station</span>
+            </h1>
+            <h2>
+                <span class="zh">出警记录</span>
+                <span class="en">Dispatch Record</span>
+            </h2>
+            <div class="header-divider"></div>
+        </div>
+
+        <div class="section-title">
+            <span class="zh">接警信息</span>
+            <span class="en">Dispatch Information</span>
+        </div>
+        <table class="data-table">
+            <tbody>
+                <tr>
+                    <td class="label-col"><span class="zh">接警编号</span><span class="en">Dispatch ID</span></td>
+                    <td class="val-col" colspan="3">HTCJ-20250210-2248</td>
+                </tr>
+                <tr>
+                    <td class="label-col"><span class="zh">接警时间</span><span class="en">Time Received</span></td>
+                    <td class="val-col" width="32%"><span class="zh">2025年2月10日 22时48分</span><span class="en">Feb 10, 2025, 22:48</span></td>
+                    <td class="label-col"><span class="zh">接警方式</span><span class="en">Source</span></td>
+                    <td class="val-col" width="32%"><span class="zh">110指挥中心转警</span><span class="en">110 Command Center Transfer</span></td>
+                </tr>
+                <tr>
+                    <td class="label-col"><span class="zh">报警类别</span><span class="en">Category</span></td>
+                    <td class="val-col" colspan="3"><span class="zh">治安类/疑似盗窃</span><span class="en">Public Security / Suspected Theft</span></td>
+                </tr>
+                <tr>
+                    <td class="label-col"><span class="zh">报警人</span><span class="en">Caller Details</span></td>
+                    <td class="val-col" colspan="3">
+                        <span class="zh">陈勇，男，身份证号：330***********4419，住址：鹤田村东街17号，联系电话：138****0214</span>
+                        <span class="en">Chen Yong, Male, ID: 330***********4419, Address: No.17 East Street, Hetian Village, Tel: 138****0214</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">
+            <span class="zh">报警内容摘要</span>
+            <span class="en">Report Summary</span>
+        </div>
+        <div class="content-box">
+            <p>
+                <span class="zh">报警人陈勇来电称：有人从祠堂侧门出来，拿着袋子，跑得很快，"像偷东西的"。</span>
+                <span class="en">Caller Chen Yong reported: Someone came out of the ancestral hall's side door, carrying a bag, running fast, "looked like a thief."</span>
+            </p>
+            <div class="quote-text">
+                <span class="zh"><b>录音转写（节选）：</b><br>"喂，派出所吗？祠堂这边……有人从侧门出来，拿着袋子，跑很快，像偷东西的……你们快来，别让他跑了……对，祠堂，陈祠堂……侧门，刚出来没多久……"</span>
+                <span class="en"><b>Transcript (Excerpt):</b><br>"Hello, police station? Over at the ancestral hall... someone came out the side door, holding a bag, running fast, like they stole something... come quickly, don't let him get away... yes, ancestral hall, Chen's ancestral hall... side door, just came out..."</span>
+            </div>
+            <p class="note-text">
+                <span class="zh">* 注：报警人情绪激动，存在重复陈述。</span>
+                <span class="en">* Note: Caller was emotionally agitated and repetitive in his statements.</span>
+            </p>
+        </div>
+
+        <div class="section-title">
+            <span class="zh">处警情况</span>
+            <span class="en">Response Details</span>
+        </div>
+        <table class="data-table">
+            <tbody>
+                <tr>
+                    <td class="label-col"><span class="zh">指令下达时间</span><span class="en">Order Issued</span></td>
+                    <td class="val-col"><span class="zh">22时49分</span><span class="en">22:49</span></td>
+                    <td class="label-col"><span class="zh">到场时间</span><span class="en">Arrival Time</span></td>
+                    <td class="val-col"><span class="zh">23时06分</span><span class="en">23:06</span></td>
+                </tr>
+                <tr>
+                    <td class="label-col"><span class="zh">处警人员</span><span class="en">Personnel</span></td>
+                    <td class="val-col" colspan="3"><span class="zh">民警：张卫国、李志强；辅警：王磊</span><span class="en">Officers: Zhang Weiguo, Li Zhiqiang; Auxiliary: Wang Lei</span></td>
+                </tr>
+                <tr>
+                    <td class="label-col"><span class="zh">到场方式</span><span class="en">Arrival Method</span></td>
+                    <td class="val-col" colspan="3"><span class="zh">警车巡逻途中直接响应</span><span class="en">Direct response during patrol route</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">
+            <span class="zh">现场勘查记录</span>
+            <span class="en">On-site Investigation Record</span>
+        </div>
+        <div class="content-box">
+            <p><b><span class="zh">一、现场位置</span><span class="en">1. Location</span></b></p>
+            <p><span class="zh">鹤田村陈氏宗祠（省级文物保护单位），位于村中心广场北侧。</span><span class="en">Chen Ancestral Hall of Hetian Village (Provincial Heritage Site), located on the north side of the central square.</span></p>
+            <br>
+            <p><b><span class="zh">二、现场状况</span><span class="en">2. On-site Conditions</span></b></p>
+            <ol>
+                <li><span class="zh"><b>祠堂主体</b>：正门及两侧偏门均处于关闭状态，门锁完好，无撬动痕迹。</span><span class="en"><b>Main Hall</b>: Main entrance and side doors closed, locks intact, no signs of forced entry.</span></li>
+                <li><span class="zh"><b>侧门（报警人所指位置）</b>：为祠堂东侧应急通道门，挂锁完好，门缝无异常。</span><span class="en"><b>Side Door (Caller's focus)</b>: East emergency exit, padlock intact, door gap normal.</span></li>
+                <li><span class="zh"><b>周边环境</b>：祠堂前广场空旷，夜间照明正常（路灯2盏，功能正常），视线良好。</span><span class="en"><b>Surroundings</b>: Open square, night lighting operational (2 street lamps), good visibility.</span></li>
+                <li><span class="zh"><b>财物核查</b>：经与祠堂管理员陈国华共同清点，祠堂内供奉器具、功德箱及存放物品无缺失。</span><span class="en"><b>Property Check</b>: Inventory checked with administrator Chen Guohua; no artifacts, donation boxes, or stored items missing.</span></li>
+            </ol>
+            <br>
+            <p><b><span class="zh">三、走访情况</span><span class="en">3. Neighborhood Inquiries</span></b></p>
+            <ul>
+                <li><span class="zh">现场周边50米内无其他目击者。</span><span class="en">No other witnesses within a 50-meter radius.</span></li>
+                <li><span class="zh">祠堂东侧道路为巡境活动临时搭建区（详见FILE002），夜间无施工。</span><span class="en">Road east of the hall is a temporary setup zone for the Xunjing activity (see FILE002); no construction at night.</span></li>
+                <li><span class="zh">调取祠堂周边治安监控：22:30-23:15时段，未发现人员从侧门出入。</span><span class="en">CCTV footage reviewed (22:30-23:15): No persons observed entering/exiting the side door.</span></li>
+            </ul>
+        </div>
+
+        <div class="section-title">
+            <span class="zh">当事人陈述</span>
+            <span class="en">Caller's Statement</span>
+        </div>
+        <div class="content-box">
+            <p><b><span class="zh">报警人陈勇（男，54岁，鹤田村个体经营者）</span><span class="en">Chen Yong (Male, 54, Self-employed)</span></b></p>
+            <div class="quote-text">
+                <span class="zh">"我当时在自家二楼，看到祠堂那边侧门出来一个人，黑乎乎的，拎着个袋子，走得很快……我没看清脸，但肯定有人……去年巡境的时候也看到过类似情况……"</span>
+                <span class="en">"I was on my second floor and saw a dark figure come out of the hall's side door carrying a bag, walking very fast... I didn't see the face, but there was definitely someone... I saw something similar during last year's Xunjing..."</span>
+            </div>
+            <p class="note-text">
+                <span class="zh">* 民警备注：报警人提及"去年也看到过"，但经核查，2024年鹤田村未举办巡境活动（因疫情后恢复安排）。报警人妻子反映其近期睡眠质量差，夜间易惊醒。</span>
+                <span class="en">* Officer's Note: Caller mentioned "seeing it last year", but records show no Xunjing activity in 2024. Caller's wife reported he has poor sleep quality recently and wakes easily at night.</span>
+            </p>
+        </div>
+
+        <div class="section-title">
+            <span class="zh">处置结果</span>
+            <span class="en">Resolution</span>
+        </div>
+        <table class="data-table">
+            <tbody>
+                <tr>
+                    <td class="label-col"><span class="zh">处置类别</span><span class="en">Category</span></td>
+                    <td class="val-col"><span class="zh">口头记录/未发现违法犯罪事实</span><span class="en">Verbal Record / No criminal facts found</span></td>
+                    <td class="label-col"><span class="zh">案件状态</span><span class="en">Case Status</span></td>
+                    <td class="val-col"><span class="zh">不予立案（无犯罪事实）</span><span class="en">Not Filed</span></td>
+                </tr>
+                <tr>
+                    <td class="label-col"><span class="zh">处理方式</span><span class="en">Actions Taken</span></td>
+                    <td class="val-col" colspan="3">
+                        <span class="zh">1. 现场告知报警人勘查结果；<br>2. 登记备案；<br>3. 建议报警人如有新线索及时联系派出所</span>
+                        <span class="en">1. Informed caller of on-site findings; <br>2. Recorded for file; <br>3. Advised caller to contact the station if new clues arise.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label-col"><span class="zh">当事人意见</span><span class="en">Caller's Stance</span></td>
+                    <td class="val-col" colspan="3"><span class="zh">陈勇坚持"肯定有人"，但无法提供进一步细节，签字确认"已知悉处理结果"</span><span class="en">Chen Yong insists "there was definitely someone", but provided no details. Signed acknowledging the resolution.</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">
+            <span class="zh">附注</span>
+            <span class="en">Add. Notes</span>
+        </div>
+        <div class="content-box">
+            <ol>
+                <li><span class="zh">报警人陈勇近期多次反映夜间在北坡区域听到异常声响，建议关注其心理健康状况。</span><span class="en">Caller has reported abnormal sounds near North Slope recently; suggest monitoring mental health.</span></li>
+                <li><span class="zh">祠堂侧门区域为巡境路线途经点，活动期间将加强巡逻。</span><span class="en">Side door area is on the Xunjing route; patrols will be increased.</span></li>
+            </ol>
+        </div>
+
+        <div class="system-note">
+            <div class="system-note-title">
+                <span class="zh">【系统备注】</span>
+                <span class="en">【 SYSTEM NOTE 】</span>
+            </div>
+            <span class="zh">本记录已同步录入公安警务综合平台。报警人陈勇的重复报警模式及"去年也看到过"的陈述，与其妻子访谈形成交叉印证，建议后续调查关注其是否存在焦虑或幻听症状，而非排除外部事件可能性。</span>
+            <span class="en">This record is synced to the Integrated Police Platform. Chen Yong's repetitive calling pattern and "saw it last year" statement cross-reference with his wife's interview. Subsequent investigation should note potential anxiety/auditory hallucinations, rather than solely dismissing external events.</span>
+        </div>
+
+        <div class="approval-section">
+            <table class="approval-table">
+                <tbody>
+                    <tr>
+                        <td colspan="3" class="header-row">
+                            <span class="zh">【文书制作与签章】</span>
+                            <span class="en">Document Signatures</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="role-row" width="33.3%"><span class="zh">记录人</span><span class="en">Recording Officer</span></td>
+                        <td class="role-row" width="33.3%"><span class="zh">审核人 / 校对</span><span class="en">Reviewed By</span></td>
+                        <td class="role-row" width="33.3%"><span class="zh">归档状态</span><span class="en">Archive Status</span></td>
+                    </tr>
+                    <tr>
+                        <td class="status-row">
+                            <div class="status-name status-blue">
+                                <span class="zh">张卫国 (警号：3305**)</span>
+                                <span class="en">Zhang Weiguo (No. 3305**)</span>
+                            </div>
+                            <div class="status-date">2025-02-10 23:45:00</div>
+                        </td>
+                        <td class="status-row">
+                            <div class="status-name status-green">
+                                <span class="zh">李志强 (已审核)</span>
+                                <span class="en">Li Zhiqiang (Checked)</span>
+                            </div>
+                            <div class="status-date">2025-02-10 23:58:00</div>
+                        </td>
+                        <td class="status-row">
+                            <div class="status-name status-red">
+                                <span class="zh">HTGA-2025-XJ-0314</span>
+                                <span class="en">HTGA-2025-XJ-0314</span>
+                            </div>
+                            <div class="status-date">
+                                <span class="zh">*(一式两份，自动电子存档)*</span>
+                                <span class="en">*(Duplicate copy electronically archived)*</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        // ---------------- 核心：向系统报告已读 ----------------
+        window.onload = function() {
+            localStorage.setItem('viewed_file003', 'true'); // 记录这篇记录已经被阅读了
+            
+            // 恢复玩家设置的语言
+            const savedLang = localStorage.getItem('gameLanguage');
+            if (savedLang === 'en') {
+                const body = document.getElementById('body-container');
+                body.classList.remove('lang-zh');
+                body.classList.add('lang-en');
+            }
+        };
+
+        function toggleLanguage() {
+            const body = document.getElementById('body-container');
+            if (body.classList.contains('lang-zh')) {
+                body.classList.remove('lang-zh');
+                body.classList.add('lang-en');
+            } else {
+                body.classList.remove('lang-en');
+                body.classList.add('lang-zh');
+            }
+        }
+    </script>
+</body>
+</html>

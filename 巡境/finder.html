@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finder - IMG_4431.png</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; user-select: none; }
+        body { width: 100vw; height: 100vh; overflow: hidden; background: radial-gradient(circle at 80% 20%, #4c1d95, #1e1b4b, #0f172a); display: flex; justify-content: center; align-items: center; }
+        .lang-en .zh { display: none; } .lang-zh .en { display: none; }
+
+        .mac-menu-bar { position: absolute; top: 0; width: 100%; height: 24px; background: rgba(0,0,0,0.2); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; color: white; font-size: 13px; font-weight: 500; z-index: 1000; }
+        .menu-left { display: flex; gap: 15px; } .menu-left span:first-child { font-weight: 800; font-size: 14px;} .menu-right { display: flex; gap: 15px; }
+
+        .mac-window { width: 1000px; height: 650px; background: rgba(30,30,30,0.95); backdrop-filter: blur(20px); border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1) inset; display: flex; flex-direction: column; overflow: hidden; animation: popIn 0.4s forwards; color: #ececec; }
+        @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .title-bar { height: 52px; background: rgba(45,45,45,0.9); display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #111; }
+        .traffic-lights { display: flex; gap: 8px; width: 70px; } .traffic-lights div { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+        .close { background: #ff5f56; } .minimize { background: #ffbd2e; } .maximize { background: #27c93f; }
+        .toolbar-actions { display: flex; align-items: center; gap: 15px; margin-left: 10px; color: #aaa; font-size: 16px; } .toolbar-actions span { cursor: pointer; } .toolbar-actions span:hover { color: #fff; }
+        .window-title { flex: 1; text-align: center; font-size: 14px; font-weight: bold; color: #dfdfdf; margin-right: 80px; display: flex; justify-content: center; align-items: center; gap: 6px; }
+
+        .finder-body { display: flex; flex: 1; height: calc(100% - 52px); }
+        .sidebar { width: 160px; background: rgba(40,40,40,0.5); border-right: 1px solid #222; padding: 15px 10px; display: flex; flex-direction: column; gap: 5px; }
+        .sidebar-title { font-size: 11px; color: #888; font-weight: bold; padding: 5px 10px; margin-top: 10px; }
+        .sidebar-item { padding: 6px 10px; border-radius: 5px; font-size: 13px; color: #ccc; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .sidebar-item:hover { background: rgba(255,255,255,0.1); } .sidebar-item.active { background: #0060df; color: white; }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; background: #1e1e1e; position: relative; }
+        .image-preview-area { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; overflow: hidden; }
+        .preview-image { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: zoom-in; }
+
+        .thumbnail-bar { height: 80px; background: #181818; border-top: 1px solid #222; display: flex; align-items: center; padding: 0 20px; gap: 10px; overflow-x: auto; }
+        .thumbnail { width: 50px; height: 50px; background: #333; border-radius: 4px; flex-shrink: 0; border: 2px solid transparent; cursor: pointer; }
+        .thumbnail.active { border-color: #0060df; background-image: url('ChatGPT Image 2026年5月31日 22_10_34.png'); background-size: cover; background-position: center; }
+
+        .inspector { width: 260px; background: rgba(35,35,35,0.9); border-left: 1px solid #222; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; font-size: 13px; color: #ccc; }
+        .inspector-img-thumb { width: 100%; height: 140px; background-image: url('ChatGPT Image 2026年5月31日 22_10_34.png'); background-size: cover; background-position: center; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .inspector-title { font-size: 16px; font-weight: bold; color: #fff; margin-bottom: 5px; word-wrap: break-word; }
+        .inspector-size { font-size: 12px; color: #888; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #333; }
+        .info-group { margin-bottom: 15px; } .info-label { font-size: 11px; color: #888; margin-bottom: 4px; font-weight: bold; text-transform: uppercase;} .info-value { font-size: 13px; color: #ddd; margin-bottom: 8px; }
+
+        .clue-text { color: #ff9f0a; font-family: monospace; position: relative; cursor: help; }
+        .clue-text:hover::after { content: "cache: api.snapedit.com/temp/4431-clean"; position: absolute; bottom: -25px; left: 0; background: #000; color: #0f0; padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 100; }
+        .tag-pill { display: inline-block; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 10px; font-size: 11px; color: #aaa; margin-right: 5px; margin-top: 5px; }
+    </style>
+</head>
+<body id="body-container">
+
+    <div class="mac-menu-bar">
+        <div class="menu-left"><span></span><span>Finder</span><span>File</span><span>Edit</span><span>View</span><span>Go</span><span>Window</span><span>Help</span></div>
+        <div class="menu-right"><span>💬</span><span>🌐</span><span>🔋 78%</span><span>🔍</span><span>Sat Feb 15 03:12</span></div>
+    </div>
+
+    <div class="mac-window">
+        
+        <div class="title-bar">
+            <div class="traffic-lights"><div class="close"></div><div class="minimize"></div><div class="maximize"></div></div>
+            <div class="toolbar-actions"><span>⟨</span> <span>⟩</span><span style="margin-left: 10px;">≡</span><span>⊞</span><span>▤</span></div>
+            <div class="window-title">🖼️ <span class="zh">照片</span><span class="en">Photos</span></div>
+        </div>
+
+        <div class="finder-body">
+            
+            <div class="sidebar">
+                <div class="sidebar-title"><span class="zh">个人收藏</span><span class="en">Favorites</span></div>
+                <div class="sidebar-item"><span>🏠</span> <span class="zh">桌面</span><span class="en">Desktop</span></div>
+                <div class="sidebar-item"><span>📄</span> <span class="zh">文稿</span><span class="en">Documents</span></div>
+                <div class="sidebar-item"><span>⬇️</span> <span class="zh">下载</span><span class="en">Downloads</span></div>
+                <div class="sidebar-item"><span>☁️</span> iCloud <span class="zh">云盘</span><span class="en">Drive</span></div>
+                <div class="sidebar-title"><span class="zh">位置</span><span class="en">Locations</span></div>
+                <div class="sidebar-item"><span>💻</span> <span class="zh">林砚的 MacBook</span><span class="en">Lin Yan's MacBook</span></div>
+                <div class="sidebar-title"><span class="zh">田野调查资料</span><span class="en">Fieldwork Data</span></div>
+                <div class="sidebar-item"><span>📁</span> <span class="zh">访谈录音</span><span class="en">Interview Audios</span></div>
+                <div class="sidebar-item active"><span>📁</span> <span class="zh">照片</span><span class="en">Photos</span></div>
+                <div class="sidebar-item"><span>📁</span> <span class="zh">扫描档案</span><span class="en">Scanned Archives</span></div>
+            </div>
+
+            <div class="main-content">
+                <div class="image-preview-area">
+                    <img src="IMG_4431.png" alt="IMG_4431" class="preview-image" id="previewImage">
+                </div>
+                <div class="thumbnail-bar">
+                    <div class="thumbnail" style="background:#222;"></div><div class="thumbnail" style="background:#2a2a2a;"></div>
+                    <div class="thumbnail active"></div><div class="thumbnail" style="background:#333;"></div>
+                    <div class="thumbnail" style="background:#3a3a3a;"></div>
+                </div>
+            </div>
+
+            <div class="inspector">
+                <div class="inspector-img-thumb"></div>
+                <div class="inspector-title">IMG_4431.png</div>
+                <div class="inspector-size">3.2 MB — 1920 × 2560</div>
+
+                <div class="info-group">
+                    <div class="info-label"><span class="zh">信息</span><span class="en">Information</span></div>
+                    <div class="info-value"><span class="zh">创建时间：2025年2月14日 上午 02:14:08</span><span class="en">Created: Feb 14, 2025, 02:14:08 AM</span></div>
+                    <div class="info-value"><span class="zh">修改时间：2025年2月14日 上午 02:15:22</span><span class="en">Modified: Feb 14, 2025, 02:15:22 AM</span></div>
+                    <div class="info-value"><span class="zh">种类：PNG 图像</span><span class="en">Kind: PNG Image</span></div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label"><span class="zh">更多信息</span><span class="en">More Info</span> (EXIF DUMP)</div>
+                    <div class="info-value" style="color:#aaa;">
+                        Camera: iPhone 13<br>Lens: 26mm f/1.6<br>Exposure: 1/15s ISO 500<br>Flash: Fired, Auto<br>
+                        GPS: <span style="color:#ff6b6b;">disabled / NULL</span>
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label"><span class="zh">处理软件</span><span class="en">Software</span> (SOFTWARE)</div>
+                    <div class="info-value clue-text">SnapEdit 3.1</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label"><span class="zh">标签</span><span class="en">Tags</span></div>
+                    <div>
+                        <span class="tag-pill"><span class="zh">神坛</span><span class="en">Altar</span></span>
+                        <span class="tag-pill"><span class="zh">缝隙</span><span class="en">Crevice</span></span>
+                        <span class="tag-pill"><span class="zh">夜拍</span><span class="en">Night Shot</span></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="score_system.js"></script>
+    <script>
+        window.onload = function() {
+            const savedLang = localStorage.getItem('gameLanguage') || 'zh';
+            document.body.className = 'lang-' + savedLang;
+
+            // 计分埋点：玩家查看修改痕迹
+            const clueElement = document.querySelector('.clue-text');
+            if (clueElement) {
+                clueElement.addEventListener('mouseenter', function() {
+                    if (!localStorage.getItem('scored_exif')) {
+                        if (typeof addSkeptic === 'function') addSkeptic(3, "查阅图片 EXIF 篡改痕迹 (SnapEdit)");
+                        localStorage.setItem('scored_exif', 'true');
+                    }
+                });
+            }
+        };
+
+        const img = document.getElementById('previewImage');
+        let isZoomed = false, isDragging = false, hasMoved = false;
+        let startX, startY, currentX = 0, currentY = 0;
+        const ZOOM_SCALE = 3; 
+
+        img.addEventListener('mousedown', function(e) {
+            if (!isZoomed) return;
+            e.preventDefault(); isDragging = true; hasMoved = false;
+            img.style.cursor = 'grabbing'; img.style.transition = 'none'; 
+            startX = e.clientX - currentX; startY = e.clientY - currentY;
+        });
+
+        window.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            hasMoved = true;
+            currentX = e.clientX - startX; currentY = e.clientY - startY;
+            img.style.transform = `translate(${currentX}px, ${currentY}px) scale(${ZOOM_SCALE})`;
+        });
+
+        window.addEventListener('mouseup', function(e) {
+            if (isDragging) { isDragging = false; img.style.cursor = 'grab'; }
+        });
+
+        img.addEventListener('click', function(e) {
+            if (hasMoved && isZoomed) { hasMoved = false; return; }
+            if (!isZoomed) {
+                img.style.transition = 'transform 0.3s ease-out';
+                currentX = 0; currentY = 0;
+                img.style.transform = `translate(0px, 0px) scale(${ZOOM_SCALE})`;
+                img.style.cursor = 'grab'; isZoomed = true;
+            } else {
+                img.style.transition = 'transform 0.3s ease-out';
+                currentX = 0; currentY = 0;
+                img.style.transform = `translate(0px, 0px) scale(1)`;
+                img.style.cursor = 'zoom-in'; isZoomed = false;
+            }
+        });
+    </script>
+</body>
+</html>

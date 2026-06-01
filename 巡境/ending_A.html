@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>结局 A</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "PingFang SC", sans-serif; }
+        body { background-color: #000; color: #e5e5e5; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .lang-en .zh { display: none; } .lang-zh .en { display: none; }
+        
+        .story-container { width: 800px; padding: 40px; font-size: 16px; line-height: 2; text-align: justify; }
+        .paragraph { opacity: 0; transform: translateY(20px); animation: fadeUp 2s forwards; margin-bottom: 25px; }
+        .delay-1 { animation-delay: 1s; } .delay-2 { animation-delay: 4s; } .delay-3 { animation-delay: 8s; } .delay-4 { animation-delay: 12s; }
+        
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+        
+        .final-text { text-align: center; margin-top: 60px; font-size: 20px; font-weight: bold; color: #fff; letter-spacing: 2px;}
+    </style>
+</head>
+<body id="body-container">
+    <div class="story-container">
+        <div class="paragraph delay-1">
+            <span class="zh">林砚提交论文，指出以“阿豪”为首的团伙利用巡境走私。论文被导师推荐发表，网络媒体转载，引发舆情。</span>
+            <span class="en">Lin Yan submits his paper, pointing out that a syndicate led by "Ah Hao" used the patrol ritual for smuggling. Recommended by his mentor, the paper is published and picked up by online media, sparking public outcry.</span>
+        </div>
+        <div class="paragraph delay-2">
+            <span class="zh">警方介入调查，但最终因证据不足，无人被起诉。阿豪被迫离开村子，村民们纷纷抱怨“读书人害人”。</span>
+            <span class="en">Police intervene, but ultimately no one is prosecuted due to insufficient evidence. Ah Hao is forced to leave the village, and the villagers complain that "educated people ruin lives."</span>
+        </div>
+        <div class="paragraph delay-3">
+            <span class="zh">第二年正月，林砚回到鹤田村参加下一年的巡境，那个临时神坛已经被拆除了，村民对他极其冷漠。他突然看到阿豪在路边摆摊卖橘子。阿豪对他说：“我从没做过那事。但你写的是‘论文’，谁信我呢？”</span>
+            <span class="en">The following year, Lin Yan returns to Hetian Village for the next patrol. The temporary altar has been dismantled, and the villagers treat him with extreme coldness. He suddenly sees Ah Hao selling oranges by the roadside. Ah Hao tells him: "I never did that. But what you wrote is a 'paper', who would believe me?"</span>
+        </div>
+        <div class="paragraph delay-4 final-text">
+            <span class="zh">你找到了你想要的真相。</span>
+            <span class="en">You found the truth you wanted.</span>
+        </div>
+    </div>
+    <script> document.getElementById('body-container').className = 'lang-' + (localStorage.getItem('gameLanguage') || 'zh'); </script>
+</body>
+</html>

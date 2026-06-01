@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提交论文结论</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
+        body { background-color: #111; color: #eee; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; overflow: hidden; }
+        .lang-en .zh { display: none; } .lang-zh .en { display: none; }
+
+        .prompt-container { width: 600px; padding: 40px; background: #222; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border-top: 4px solid #10b981; animation: fadeIn 1s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .system-title { font-size: 14px; color: #10b981; font-weight: bold; margin-bottom: 20px; letter-spacing: 1px; }
+        .main-text { font-size: 20px; line-height: 1.6; margin-bottom: 40px; }
+
+        .options { display: flex; flex-direction: column; gap: 15px; }
+        .option-btn { 
+            background: #333; color: #fff; padding: 15px 20px; border: 1px solid #444; border-radius: 6px; 
+            font-size: 16px; cursor: pointer; text-align: left; transition: all 0.2s; 
+        }
+        .option-btn:hover { background: #444; border-color: #10b981; transform: translateX(5px); }
+
+        #option-c { display: none; border-color: #ef4444; color: #ef4444; }
+        #option-c:hover { background: rgba(239, 68, 68, 0.1); border-color: #ef4444; }
+    </style>
+</head>
+<body id="body-container">
+
+    <div class="prompt-container">
+        <div class="system-title">
+            <span class="zh">【系统提示 / SYSTEM PROMPT】</span><span class="en">[ SYSTEM PROMPT ]</span>
+        </div>
+        <div class="main-text">
+            <span class="zh">你的田野笔记可以写成论文了。<br>请基于你所收集的材料，选择你的最终结论：</span>
+            <span class="en">Your field notes are ready to be formulated into a paper.<br>Please select your final conclusion based on the gathered materials:</span>
+        </div>
+
+        <div class="options">
+            <button class="option-btn" onclick="chooseEnding('A')">
+                <span class="zh">选项 A：巡境仪式被犯罪集团利用。</span>
+                <span class="en">Option A: The patrol ritual is being exploited by a criminal syndicate.</span>
+            </button>
+            <button class="option-btn" onclick="chooseEnding('B')">
+                <span class="zh">选项 B：所有线索无法形成一致叙事，放弃结论。</span>
+                <span class="en">Option B: The clues fail to form a consistent narrative. Abandon conclusion.</span>
+            </button>
+            <!-- 只有触发过 Meta 分数（比如看到了 UNKNOWN 弹窗）才会显示选项 C -->
+            <button class="option-btn" id="option-c" onclick="chooseEnding('C')">
+                <span class="zh">选项 C：我怀疑游戏本身在欺骗我。</span>
+                <span class="en">Option C: I suspect the game itself is deceiving me.</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="score_system.js"></script>
+    <script>
+        window.onload = function() {
+            const savedLang = localStorage.getItem('gameLanguage') || 'zh';
+            document.body.className = 'lang-' + savedLang;
+
+            // 检查 Meta 分数，判断是否显示 C 结局
+            const s_meta = parseInt(localStorage.getItem('score_meta') || '0');
+            if (s_meta > 0) {
+                document.getElementById('option-c').style.display = 'block';
+            }
+        };
+
+        function chooseEnding(type) {
+            if (type === 'A') window.location.href = 'ending_A.html';
+            if (type === 'B') window.location.href = 'ending_B.html';
+            if (type === 'C') window.location.href = 'ending_C.html';
+        }
+    </script>
+</body>
+</html>

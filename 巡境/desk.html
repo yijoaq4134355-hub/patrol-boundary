@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>巡境 XÚNJÌNG - Mac Desktop</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; user-select: none; }
+        body { overflow: hidden; width: 100vw; height: 100vh; background-color: #1a1a1a; }
+        .lang-en .zh { display: none; } .lang-zh .en { display: none; }
+        
+        #bg-layer { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-image: url('ChatGPT Image 2026年5月31日 16_04_03.png'); background-size: cover; background-position: center; z-index: 1; }
+        .screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 10; }
+        .screen.active { display: flex; }
+
+        #lang-screen { background-color: #000; z-index: 50; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        .lang-title { font-size: 24px; margin-bottom: 40px; font-weight: 300; letter-spacing: 2px; }
+        .lang-buttons { display: flex; gap: 20px; }
+        .btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 12px 30px; border-radius: 20px; font-size: 16px; cursor: pointer; transition: all 0.3s; }
+        .btn:hover { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.6); }
+
+        #login-screen { z-index: 20; backdrop-filter: blur(20px); background: rgba(0, 0, 0, 0.4); flex-direction: column; justify-content: center; align-items: center; color: white; }
+        .avatar { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center; font-size: 40px; color: #333; font-weight: bold; }
+        .username { font-size: 28px; font-weight: 500; margin-bottom: 25px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .password-container { position: relative; display: flex; align-items: center; }
+        .password-input { width: 200px; padding: 8px 30px 8px 15px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.2); color: white; font-size: 14px; outline: none; backdrop-filter: blur(10px); transition: border 0.2s; }
+        .password-input::placeholder { color: rgba(255, 255, 255, 0.7); }
+        .password-input:focus { border-color: rgba(255, 255, 255, 0.8); }
+        .submit-btn { position: absolute; right: 10px; background: none; border: none; color: white; cursor: pointer; font-size: 16px; opacity: 0.7; }
+        .submit-btn:hover { opacity: 1; }
+        .hint-text { position: absolute; bottom: 40px; font-size: 12px; color: rgba(255, 255, 255, 0.8); letter-spacing: 1px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        .error-msg { color: #ff6b6b; font-size: 13px; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
+
+        #desktop-screen { z-index: 10; display: none; }
+        .desktop-content { position: relative; width: 100%; height: 100%; }
+        .menu-bar { position: absolute; top: 0; width: 100%; height: 24px; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; color: white; font-size: 13px; font-weight: 500; }
+        .menu-left { display: flex; gap: 15px; } .menu-left span:first-child { font-weight: 800; font-size: 14px;} .menu-right { display: flex; gap: 15px; }
+        
+        .center-text { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: rgba(255, 255, 255, 0.8); text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .center-text h1 { font-size: 28px; font-weight: 300; letter-spacing: 8px; margin-bottom: 5px; }
+        .center-text p { font-size: 14px; letter-spacing: 2px; }
+
+        .sticky-notes { position: absolute; top: 60px; left: 30px; display: flex; flex-direction: column; gap: 20px; }
+        .note { background-color: #fef08a; width: 240px; padding: 15px; border-radius: 2px; box-shadow: 2px 3px 10px rgba(0,0,0,0.2); color: #333; font-size: 12px; line-height: 1.6; }
+        .note h3 { font-size: 14px; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 4px;}
+        
+        .desktop-icons-grid { position: absolute; top: 40px; right: 20px; display: grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(5, 100px); gap: 10px; direction: rtl; }
+        .file-icon { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; cursor: pointer; text-decoration: none; direction: ltr; position: relative;}
+        .file-icon:hover .file-name { background-color: rgba(0, 100, 255, 0.6); border-radius: 4px; }
+        .icon-img { width: 50px; height: 50px; margin-bottom: 5px; font-size: 40px; line-height: 50px; text-align: center; }
+        .app-icon-img { width: 50px; height: 50px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 30px; margin-bottom: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .finder-locked { opacity: 0.5; filter: grayscale(100%); cursor: not-allowed !important; transition: all 0.5s ease; }
+        .icon-folder::before { content: "📁"; } .icon-doc::before { content: "📄"; }
+        .file-name { color: white; font-size: 11px; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.8); padding: 2px 4px; word-wrap: break-word; max-width: 90px; }
+        .file-info { color: rgba(255,255,255,0.6); font-size: 10px; text-align: center; text-shadow: 0 1px 1px rgba(0,0,0,0.8); }
+
+        .dock { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 8px 12px; display: flex; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .dock-item { width: 45px; height: 45px; border-radius: 10px; background-color: rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; font-size: 28px; text-decoration: none; transition: transform 0.2s, margin 0.2s; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: relative; }
+        .dock-item:hover { transform: scale(1.3) translateY(-10px); z-index: 100; }
+        .app-finder { background: linear-gradient(180deg, #f9f9f9 50%, #e6e6e6 50%); } .app-wechat { background: #07c160; color: white; } .app-safari { background: white; } .app-trash { background: rgba(255,255,255,0.3); }
+        .dock-item.active::after { content: ''; position: absolute; bottom: -6px; width: 4px; height: 4px; background: rgba(255,255,255,0.8); border-radius: 50%; }
+
+        /* ====== 结局C 混沌崩溃特效 ====== */
+        body.glitch-mode #bg-layer { filter: hue-rotate(90deg) contrast(200%); animation: bgFlicker 0.5s infinite; }
+        @keyframes bgFlicker { 0% {opacity:1;} 50% {opacity:0.8;} 100% {opacity:1;} }
+        body.glitch-mode .file-icon { animation: iconShake 0.2s infinite; }
+        @keyframes iconShake { 0% {transform: translate(1px, 1px) rotate(0deg);} 10% {transform: translate(-1px, -2px) rotate(-1deg);} 20% {transform: translate(-3px, 0px) rotate(1deg);} 30% {transform: translate(3px, 2px) rotate(0deg);} 40% {transform: translate(1px, -1px) rotate(1deg);} 50% {transform: translate(-1px, 2px) rotate(-1deg);} 60% {transform: translate(-3px, 1px) rotate(0deg);} 70% {transform: translate(3px, 1px) rotate(-1deg);} 80% {transform: translate(-1px, -1px) rotate(1deg);} 90% {transform: translate(1px, 2px) rotate(0deg);} 100% {transform: translate(1px, -2px) rotate(-1deg);} }
+        .chaos-num { position: absolute; bottom: -15px; right: -10px; color: #ef4444; font-family: monospace; font-weight: bold; font-size: 14px; text-shadow: 0 0 5px #000; display: none;}
+        body.glitch-mode .chaos-num { display: block; }
+    </style>
+</head>
+<body class="lang-zh" id="body-container">
+
+    <div id="bg-layer"></div>
+
+    <div id="lang-screen" class="screen active">
+        <div class="lang-title">Please Select Language / 请选择语言</div>
+        <div class="lang-buttons">
+            <button class="btn" onclick="setLanguage('zh')">中文 (Chinese)</button>
+            <button class="btn" onclick="setLanguage('en')">English</button>
+        </div>
+    </div>
+
+    <div id="login-screen" class="screen">
+        <div class="avatar">林</div>
+        <div class="username"><span class="zh">林砚</span><span class="en">Lin Yan</span></div>
+        <div class="password-container">
+            <input type="password" id="password-input" class="password-input" autocomplete="off" onkeypress="handleEnter(event)">
+            <button class="submit-btn" onclick="checkPassword()">➔</button>
+        </div>
+        <div class="error-msg" id="error-msg">
+            <span class="zh">密码错误，请重新输入。</span><span class="en">Incorrect password. Please try again.</span>
+        </div>
+        <div class="hint-text">
+            <span class="zh">🔔 提示：尝试从搜索【你自己的名字】开始，祝你好运。</span>
+            <span class="en">🔔 Hint: Try starting by typing [Your Own Name]. Good luck.</span>
+        </div>
+    </div>
+
+    <div id="desktop-screen" class="screen">
+        <div class="desktop-content">
+            <div class="menu-bar">
+                <div class="menu-left"><span></span><span>Finder</span><span>File</span><span>Edit</span><span>View</span><span>Go</span><span>Window</span><span>Help</span></div>
+                <div class="menu-right"><span>💬</span><span>🌐</span><span>A</span><span>🔋 78%</span><span>🔍</span><span>Sat Feb 15 03:12</span></div>
+            </div>
+
+            <div class="center-text">
+                <h1><span class="zh">巡境</span><span class="en">XÚNJÌNG</span></h1>
+                <p><span class="zh">XÚNJÌNG</span><span class="en">The Patrol</span></p><br><p style="font-size: 12px; opacity: 0.7;">/</p><br>
+                <p><span class="zh">当仪式成为路线，</span><span class="en">When the ritual becomes a route,</span></p>
+                <p><span class="zh">谁在行走，谁在凝视？</span><span class="en">who walks, and who watches?</span></p>
+            </div>
+
+            <div class="sticky-notes">
+                <div class="note">
+                    <h3><span class="zh">研究计划</span><span class="en">Research Plan</span></h3>
+                    <p>
+                        <span class="zh">- 村民访谈（老李、阿珍、阿勇）</span><span class="en">- Village Interviews (Old Li, Ah Zhen, Ah Yong)</span><br>
+                        <span class="zh">- 巡境路线实地记录</span><span class="en">- Route Field Records</span><br>
+                        <span class="zh">- 祭祀物件测量</span><span class="en">- Ritual Objects Measurement</span><br>
+                        <span class="zh">- 档案材料整理</span><span class="en">- Archive Materials Sorting</span><br>
+                        <span class="zh">- 拍摄计划</span><span class="en">- Filming Plan</span>
+                    </p>
+                </div>
+                <div class="note">
+                    <h3><span class="zh">待办</span><span class="en">To-Do</span></h3>
+                    <p>
+                        <span class="zh">☐ 整理录音转录</span><span class="en">☐ Transcribe Audio</span><br>
+                        <span class="zh">☐ 标法异常路线点</span><span class="en">☐ Mark Abnormal Route Nodes</span><br>
+                        <span class="zh">☐ 联系导师汇报</span><span class="en">☐ Report to Mentor</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="desktop-icons-grid">
+                <a href="WeChat.html" class="file-icon" target="_blank" onclick="grantFinderAccess()">
+                    <div class="app-icon-img" style="background: #07c160; color: white;">💬</div>
+                    <div class="file-name"><span class="zh">微信.app</span><span class="en">WeChat.app</span></div>
+                    <div class="chaos-num">#17</div>
+                </a>
+                <a href="desktop_archive.html" class="file-icon" target="_blank">
+                    <div class="app-icon-img" style="background: linear-gradient(180deg, #1d5ca3 0%, #0d3c75 100%); color: white;">🏛️</div>
+                    <div class="file-name"><span class="zh">县档案库.app</span><span class="en">Archive.app</span></div>
+                    <div class="chaos-num">#42</div>
+                </a>
+                <a href="#" class="file-icon finder-app finder-locked" onclick="openFinder(event)">
+                    <div class="app-icon-img" style="background: linear-gradient(180deg, #f9f9f9 50%, #e6e6e6 50%); border: 1px solid #ccc;">💻</div>
+                    <div class="file-name">Finder</div>
+                    <div class="chaos-num">#08</div>
+                </a>
+                <a href="#" class="file-icon">
+                    <div class="app-icon-img" style="background: #2c2c2e; color: #ff3b30;">🎙️</div>
+                    <div class="file-name"><span class="zh">录音工具</span><span class="en">Recorder</span></div>
+                    <div class="chaos-num">#91</div>
+                </a>
+                <a href="#" class="file-icon">
+                    <div class="icon-img icon-doc"></div>
+                    <div class="file-name">README.txt</div><div class="file-info">4 KB</div>
+                    <div class="chaos-num">#66</div>
+                </a>
+                <a href="#" class="file-icon">
+                    <div class="icon-img icon-folder"></div>
+                    <div class="file-name"><span class="zh">田野笔记</span><span class="en">Field Notes</span></div><div class="file-info">23 items</div>
+                    <div class="chaos-num">#04</div>
+                </a>
+            </div>
+
+            <div class="dock">
+                <a href="#" class="dock-item app-finder active finder-app finder-locked" title="Finder" onclick="openFinder(event)"><span style="font-size: 20px;">💻</span></a>
+                <a href="#" class="dock-item" title="Launchpad"><span style="font-size: 20px;">🚀</span></a>
+                <a href="#" class="dock-item app-safari" title="Safari"><span style="font-size: 20px;">🧭</span></a>
+                <a href="WeChat.html" class="dock-item app-wechat active" title="WeChat" target="_blank" onclick="grantFinderAccess()"><span style="font-size: 24px;">💬</span></a>
+                <a href="#" class="dock-item app-trash" title="Trash"><span style="font-size: 20px;">🗑️</span></a>
+            </div>
+        </div>
+    </div>
+
+    <script src="score_system.js"></script>
+    <script>
+        // 检测是否从 C结局 (元结局) 路由回来
+        if (window.location.search.includes('glitch=true')) {
+            document.body.classList.add('glitch-mode');
+            setInterval(() => {
+                document.querySelectorAll('.chaos-num').forEach(el => {
+                    el.innerText = '#' + Math.floor(Math.random() * 100);
+                });
+            }, 100);
+        }
+
+        function setLanguage(lang) {
+            localStorage.setItem('gameLanguage', lang);
+            document.body.className = 'lang-' + lang;
+            
+            localStorage.removeItem('wechatOpened');
+            localStorage.removeItem('viewed_file021');
+            localStorage.removeItem('viewed_file003');
+            localStorage.removeItem('wechatPhase2Unlocked');
+            
+            if (typeof resetScores === 'function') resetScores();
+            
+            document.querySelectorAll('.finder-app').forEach(el => el.classList.add('finder-locked'));
+            
+            const pwdInput = document.getElementById('password-input');
+            pwdInput.placeholder = lang === 'en' ? "Enter Password" : "输入密码";
+
+            document.getElementById('lang-screen').classList.remove('active');
+            document.getElementById('login-screen').classList.add('active');
+            pwdInput.focus();
+        }
+
+        function handleEnter(event) { if (event.key === 'Enter') checkPassword(); }
+
+        function checkPassword() {
+            const input = document.getElementById('password-input').value.toLowerCase().replace(/\s+/g, '');
+            if (input === 'linyan') {
+                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('desktop-screen').style.display = 'block';
+                document.getElementById('bg-layer').style.filter = 'none';
+
+                if (localStorage.getItem('wechatPhase2Unlocked') === 'true') {
+                    unlockFinderUI();
+                }
+            } else {
+                const errorMsg = document.getElementById('error-msg');
+                errorMsg.style.opacity = '1';
+                setTimeout(() => errorMsg.style.opacity = '0', 3000);
+            }
+        }
+        
+        function grantFinderAccess() {
+            localStorage.setItem('wechatOpened', 'true');
+        }
+
+        function unlockFinderUI() {
+            document.querySelectorAll('.finder-app').forEach(el => el.classList.remove('finder-locked'));
+        }
+
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'wechatPhase2Unlocked' && e.newValue === 'true') {
+                unlockFinderUI();
+            }
+        });
+
+        function openFinder(event) {
+            event.preventDefault();
+            const isEn = document.body.classList.contains('lang-en');
+            if (localStorage.getItem('wechatPhase2Unlocked') !== 'true') {
+                alert(isEn ? "[System Prompt]\nAccess Denied.\nTarget image not ready. Please gather clues in the Archive and wait for [WeChat] phase 2 transformation before accessing Finder." : "【系统提示】\n权限被拒绝。\n目标图片尚未就绪。请先在档案库搜集线索，等待【微信】产生二次异变后方可访问 Finder。");
+            } else {
+                window.open('finder.html', '_blank');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archive - 档案调查</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; user-select: none; }
+        body { width: 100vw; height: 100vh; overflow: hidden; background-color: #1a2a3a; display: flex; justify-content: center; align-items: center; position: relative; }
+        .lang-en .zh { display: none; } .lang-zh .en { display: none; }
+        
+        .mac-menu-bar { position: absolute; top: 0; width: 100%; height: 24px; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; color: white; font-size: 13px; font-weight: 500; z-index: 1000; }
+        .menu-left, .menu-right { display: flex; gap: 15px; align-items: center; }
+        .menu-left span:first-child { font-weight: 800; font-size: 14px;}
+
+        .mac-window { background: #f5f5f5; border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.2) inset; display: flex; flex-direction: column; overflow: hidden; position: absolute; animation: popIn 0.4s forwards; }
+        @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .title-bar { height: 28px; background: #ececec; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #ddd; }
+        .traffic-lights { display: flex; gap: 8px; width: 60px; } .traffic-lights div { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+        .close-btn { background: #ff5f56; } .min-btn { background: #ffbd2e; } .max-btn { background: #27c93f; }
+        .window-title { flex: 1; text-align: center; font-size: 12px; font-weight: bold; color: #555; margin-right: 60px; }
+
+        .archive-window { width: 900px; height: 600px; z-index: 10; }
+        .archive-header { background: linear-gradient(180deg, #1d5ca3 0%, #0d3c75 100%); color: white; padding: 15px 20px; font-size: 20px; font-weight: bold; letter-spacing: 2px; border-bottom: 3px solid #b82b2b; }
+        .archive-body { display: flex; flex: 1; background: #fff; }
+        .archive-sidebar { width: 250px; background: #f8fafd; border-right: 1px solid #c5d6e6; padding: 20px; display: flex; flex-direction: column; }
+        .search-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
+        .search-group label { font-size: 13px; font-weight: bold; color: #0d3c75; }
+        .search-group input { padding: 8px 10px; border: 1px solid #8ca6c2; border-radius: 3px; outline: none; font-size: 14px; }
+        .search-group button { background: #1d5ca3; color: white; border: none; padding: 8px; border-radius: 3px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .search-group button:hover { background: #144680; }
+
+        .history-title { font-size: 12px; font-weight: bold; color: #666; border-bottom: 1px dashed #ccc; padding-bottom: 5px; margin-bottom: 10px; }
+        .history-list { list-style: none; font-size: 12px; color: #555; display: flex; flex-direction: column; gap: 8px; }
+        .history-list li { background: #eaf1f8; padding: 5px 8px; border-radius: 3px; border-left: 3px solid #1d5ca3; }
+
+        .archive-content { flex: 1; padding: 20px; display: flex; flex-direction: column; }
+        .result-status { font-size: 13px; color: #666; margin-bottom: 15px; }
+        .archive-table { width: 100%; border-collapse: collapse; }
+        .archive-table th, .archive-table td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; font-size: 14px; }
+        .archive-table th { background: #f0f5fa; color: #333; font-weight: bold; }
+        .archive-table tr:hover { background: #f9f9f9; }
+        .view-btn { color: #1d5ca3; text-decoration: none; font-weight: bold; cursor: pointer; }
+
+        .wechat-window { width: 650px; height: 450px; z-index: 100; right: 50px; bottom: 50px; display: none; box-shadow: 0 30px 60px rgba(0,0,0,0.6); }
+        .wechat-body { display: flex; height: calc(100% - 28px); }
+        .wechat-sidebar { width: 220px; background: #e6e5e5; border-right: 1px solid #dcdcdc; }
+        .chat-item { padding: 15px; display: flex; align-items: center; gap: 10px; background: #c6c6c6; }
+        .chat-avatar { width: 40px; height: 40px; background: #111; color: #fff; display: flex; justify-content: center; align-items: center; border-radius: 4px; font-weight: bold; font-size: 18px; position: relative;}
+        .chat-avatar::after { content: ''; position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; background: #ff3b30; border-radius: 50%; }
+        .wechat-main { flex: 1; display: flex; flex-direction: column; background: #f5f5f5; }
+        .chat-header { height: 50px; border-bottom: 1px solid #e7e7e7; display: flex; align-items: center; padding: 0 20px; font-size: 16px; font-weight: bold;}
+        .chat-history { flex: 1; padding: 20px; display: flex; flex-direction: column; }
+        .msg-time { align-self: center; font-size: 12px; color: #999; margin-bottom: 15px; }
+        .msg-row { display: flex; margin-bottom: 15px; align-items: flex-start; }
+        .msg-left .msg-avatar { margin-right: 10px; }
+        .bubble { background: #fff; padding: 10px 14px; border-radius: 4px; border: 1px solid #ebebeb; max-width: 75%; font-size: 14px; line-height: 1.5; color: #000;}
+        .chat-input-disabled { height: 80px; background: #e0e0e0; border-top: 1px solid #dcdcdc; display: flex; justify-content: center; align-items: center; color: #888; font-size: 13px; font-family: monospace; }
+        @keyframes shakeAlert { 0% { transform: translateX(0); } 20% { transform: translateX(-10px); } 40% { transform: translateX(10px); } 60% { transform: translateX(-10px); } 80% { transform: translateX(10px); } 100% { transform: translateX(0); } }
+        .shake-animation { animation: shakeAlert 0.5s ease-in-out; }
+    </style>
+</head>
+<body id="body-container">
+
+    <div class="mac-menu-bar">
+        <div class="menu-left"><span></span><span>Finder</span><span>File</span><span>Edit</span><span>View</span><span>Go</span><span>Window</span><span>Help</span></div>
+        <div class="menu-right"><span>💬</span><span>🌐</span><span>🔋 78%</span><span>🔍</span><span>Sat Feb 15 03:12</span></div>
+    </div>
+
+    <div class="mac-window archive-window">
+        <div class="title-bar">
+            <div class="traffic-lights"><div class="close-btn" onclick="window.close()"></div><div class="min-btn"></div><div class="max-btn"></div></div>
+            <div class="window-title"><span class="zh">县政府旧档案数据库</span><span class="en">County Gov Old Archive Database</span></div>
+        </div>
+        <div class="archive-header"><span class="zh">鹤山县档案局数字化检索系统</span><span class="en">Heshan County Archives Digital Retrieval System</span></div>
+        <div class="archive-body">
+            <div class="archive-sidebar">
+                <div class="search-group">
+                    <label><span class="zh">全局检索</span><span class="en">Global Search</span></label>
+                    <input type="text" id="searchInput" onkeypress="handleEnter(event)">
+                    <button onclick="performSearch()"><span class="zh">检索档案</span><span class="en">Search Archives</span></button>
+                </div>
+                <div class="history-title"><span class="zh">检索日志</span><span class="en">Search Log</span></div>
+                <ul class="history-list" id="historyList"></ul>
+            </div>
+            
+            <div class="archive-content">
+                <div class="result-status" id="resultStatus">
+                    <span class="zh">系统就绪。请输入关键词进行检索。</span><span class="en">System ready. Enter keywords to search.</span>
+                </div>
+                <table class="archive-table">
+                    <thead>
+                        <tr>
+                            <th width="25%"><span class="zh">档案编号</span><span class="en">Archive ID</span></th>
+                            <th width="55%"><span class="zh">卷宗题名</span><span class="en">File Title</span></th>
+                            <th width="20%"><span class="zh">操作</span><span class="en">Action</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="mac-window wechat-window" id="wechatWindow">
+        <div class="title-bar">
+            <div class="traffic-lights"><div class="close-btn" onclick="document.getElementById('wechatWindow').style.display='none'"></div><div class="min-btn"></div><div class="max-btn"></div></div>
+            <div class="window-title">WeChat</div>
+        </div>
+        <div class="wechat-body">
+            <div class="wechat-sidebar">
+                <div class="chat-item">
+                    <div class="chat-avatar">?</div>
+                    <div>
+                        <div style="font-size:14px; font-weight:bold; color:#000;">UNKNOWN</div>
+                        <div style="font-size:12px; color:#888; margin-top:3px;"><span class="zh">你一直在查北坡？</span><span class="en">You've been looking into North Slope?</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="wechat-main">
+                <div class="chat-header">UNKNOWN</div>
+                <div class="chat-history">
+                    <div class="msg-time"><span class="zh">刚刚</span><span class="en">Just now</span></div>
+                    <div class="msg-row msg-left">
+                        <div class="msg-avatar chat-avatar" style="width:36px; height:36px; font-size:16px;">?</div>
+                        <div class="bubble"><span class="zh">你一直在查北坡？</span><span class="en">You've been looking into North Slope?</span></div>
+                    </div>
+                </div>
+                <div class="chat-input-disabled">
+                    [ SYSTEM CONNECTION LOST - <span class="zh">无法回复</span><span class="en">CANNOT REPLY</span> ]
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="score_system.js"></script>
+    <script>
+        window.onload = function() {
+            const savedLang = localStorage.getItem('gameLanguage') || 'zh';
+            document.body.className = 'lang-' + savedLang;
+            const input = document.getElementById('searchInput');
+            input.placeholder = savedLang === 'en' ? "e.g., Patrol" : "输入关键词，例如：巡境";
+        };
+
+        const database = {
+            "FILE002": { id: "HT-CWH-2025-014", title: {zh:"《巡境路线审批表（2025）》", en:"《Xunjing Route Approval Form (2025)》"}, url: "file002_approval.html" },
+            "FILE021": { id: "HT-MAP-2007-042", title: {zh:"《鹤田村旧地图扫描件》", en:"《Hetian Village Old Map Scan》"}, url: "file021_map.html" },
+            "FILE003": { id: "HTGA-2025-XJ-0314", title: {zh:"《出警记录单 - 鹤田派出所》", en:"《Police Dispatch Record - Hetian Station》"}, url: "file003_oa_police.html" },
+            "FILE001": { id: "HT-SLZ-1982-001", title: {zh:"《1982 鹤山县水利志（节录）》", en:"《1982 Heshan Water Gazetteer (Excerpt)》"}, url: "file001_water_record.html" }
+        };
+
+        const searchMapping = {
+            "巡境": ["FILE002"], "patrol": ["FILE002"],
+            "北坡": ["FILE021", "FILE003"], "north slope": ["FILE021", "FILE003"],
+            "排水渠": ["FILE001"], "drainage ditch": ["FILE001"]
+        };
+
+        const easterEggWords = ["北坡", "黑袋子", "north slope", "black bag"];
+        let foundEggWords = new Set();
+
+        function handleEnter(e) { if (e.key === 'Enter') performSearch(); }
+
+        function performSearch() {
+            const input = document.getElementById('searchInput');
+            const keyword = input.value.trim().toLowerCase();
+            if (!keyword) return;
+
+            if (keyword.includes('黑袋子') || keyword.includes('black bag')) {
+                if (typeof addConspiracy === 'function') addConspiracy(1, "搜索敏感词【黑袋子】");
+            } else if (keyword.includes('排水渠') || keyword.includes('drainage ditch')) {
+                if (typeof addSkeptic === 'function') addSkeptic(1, "试图寻找【排水渠】的客观建筑记录");
+            }
+
+            const isEn = document.body.classList.contains('lang-en');
+            const historyList = document.getElementById('historyList');
+            const li = document.createElement('li');
+            li.innerText = isEn ? `[Search] ${keyword}` : `[检索] ${keyword}`;
+            historyList.prepend(li);
+
+            const resultBody = document.getElementById('resultBody');
+            const resultStatus = document.getElementById('resultStatus');
+            resultBody.innerHTML = ''; 
+
+            let matchedFiles = [];
+            if (searchMapping[keyword]) matchedFiles = searchMapping[keyword];
+            for(let k in searchMapping) { if(keyword.includes(k.toLowerCase())) matchedFiles = searchMapping[k]; }
+
+            if (matchedFiles.length > 0) {
+                resultStatus.innerText = isEn ? `Search "${keyword}" complete. Found ${matchedFiles.length} records.` : `检索 "${keyword}" 完成。共找到 ${matchedFiles.length} 份相关档案。`;
+                matchedFiles.forEach(fileKey => {
+                    const file = database[fileKey];
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${file.id}</td>
+                        <td>${isEn ? file.title.en : file.title.zh}</td>
+                        <td><a href="${file.url}" target="_blank" class="view-btn">${isEn ? "View ➔" : "查看全文 ➔"}</a></td>
+                    `;
+                    resultBody.appendChild(tr);
+                });
+            } else {
+                resultStatus.innerText = isEn ? `Search "${keyword}" complete. Found 0 records.` : `检索 "${keyword}" 完成。共找到 0 份相关档案。`;
+            }
+
+            input.value = '';
+            checkChaosTrigger(keyword);
+        }
+
+        function checkChaosTrigger(keyword) {
+            if (keyword.includes("北坡") || keyword.includes("north slope")) foundEggWords.add("north_slope");
+            if (keyword.includes("黑袋子") || keyword.includes("black bag")) foundEggWords.add("black_bag");
+            
+            if (foundEggWords.size >= 2) {
+                const isEn = document.body.classList.contains('lang-en');
+                
+                alert(isEn ? "[CRITICAL WARNING] UNAUTHORIZED QUERY PATTERN DETECTED.\nSystem defense protocols activated. Initiating Behavior Audit..." : "【严重警告】检测到违规的检索模式。\n系统防卫协议已激活，正在启动行为审计程序...");
+                
+                const wechatWin = document.getElementById('wechatWindow');
+                wechatWin.style.display = 'flex';
+                wechatWin.classList.add('shake-animation');
+                
+                if (typeof addMeta === 'function') addMeta(5, "触发系统反向监视 (UNKNOWN 警告)");
+
+                // 【重构核心】：弹窗后 3 秒自动跳转到“结论选择页”
+                setTimeout(() => {
+                    window.location.href = 'conclusion.html';
+                }, 3000);
+
+                foundEggWords.clear(); 
+            }
+        }
+    </script>
+</body>
+</html>

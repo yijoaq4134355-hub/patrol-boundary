@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Behavior Report - 终端</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; user-select: none; }
+        body { width: 100vw; height: 100vh; overflow: hidden; background: radial-gradient(circle at center, #1e1e1e, #000); display: flex; justify-content: center; align-items: center; }
+        .lang-en .zh { display: none; } .lang-zh .en { display: none; }
+
+        .mac-window { 
+            width: 800px; height: 550px; background: rgba(10, 10, 12, 0.95); border-radius: 8px; 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.1) inset; 
+            display: flex; flex-direction: column; overflow: hidden; 
+            animation: popIn 0.5s forwards; 
+        }
+        @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .title-bar { height: 28px; background: #333; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #111; }
+        .traffic-lights { display: flex; gap: 8px; width: 60px; } .traffic-lights div { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+        .close { background: #ff5f56; } .minimize { background: #ffbd2e; } .maximize { background: #27c93f; }
+        .window-title { flex: 1; text-align: center; font-size: 12px; font-weight: bold; color: #aaa; margin-right: 60px; letter-spacing: 1px;}
+
+        .terminal-body { flex: 1; padding: 20px 25px; overflow-y: auto; color: #10b981; font-size: 14px; line-height: 1.6; text-shadow: 0 0 5px rgba(16, 185, 129, 0.4); position: relative;}
+        .sys-header { border-bottom: 1px dashed #10b981; padding-bottom: 10px; margin-bottom: 20px; }
+        .alert-text { color: #ef4444; font-weight: bold; text-shadow: 0 0 5px rgba(239, 68, 68, 0.6); animation: blink 2s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .score-panel { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; background: rgba(16, 185, 129, 0.05); padding: 15px; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .score-row { display: flex; align-items: center; gap: 15px; }
+        .score-label { width: 160px; font-weight: bold; }
+        .score-bar-container { flex: 1; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; }
+        .score-bar { height: 100%; transition: width 1s ease-out; }
+        .bar-conspiracy { background: #ff6b6b; box-shadow: 0 0 8px #ff6b6b; }
+        .bar-skeptic { background: #4dabf7; box-shadow: 0 0 8px #4dabf7; }
+        .bar-meta { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        .score-value { width: 30px; text-align: right; }
+
+        .profile-section { margin-bottom: 25px; }
+        .profile-title { font-weight: bold; margin-bottom: 10px; background: #10b981; display: inline-block; padding: 2px 8px; color: #000; }
+        .profile-content { border-left: 2px solid #10b981; padding-left: 15px; color: #e2e8f0; }
+
+        .log-section { font-size: 12px; color: #888; }
+        .log-list { list-style: none; margin-top: 10px; }
+        .log-list li { margin-bottom: 5px; } .log-list li::before { content: "> "; color: #10b981; }
+        .cursor { display: inline-block; width: 8px; height: 15px; background: #10b981; animation: blink 1s infinite; vertical-align: middle; }
+
+        /* 劫持覆盖层 */
+        #hijack-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #ef4444; justify-content: center; align-items: center; flex-direction: column; font-size: 18px; z-index: 100; font-weight: bold; }
+    </style>
+</head>
+<body id="body-container">
+
+    <div class="mac-window">
+        <div class="title-bar">
+            <div class="traffic-lights"><div class="close" onclick="window.close()"></div><div class="minimize"></div><div class="maximize"></div></div>
+            <div class="window-title">bash - behavior_audit - 80x24</div>
+        </div>
+
+        <div class="terminal-body" id="terminalOutput">
+            
+            <div class="sys-header">
+                <div>[ SYSTEM DIAGNOSTIC & BEHAVIOR AUDIT ]</div>
+                <div>SUBJECT: <span style="color:#fff;">LIN YAN (SESSION_ID: HT-2026)</span></div>
+                <div class="alert-text mt-2"><span class="zh">警告：您正在被评估。</span><span class="en">WARNING: YOU ARE BEING EVALUATED.</span></div>
+            </div>
+
+            <div class="score-panel">
+                <div class="score-row"><div class="score-label"><span class="zh">阴谋/妄想指标</span><span class="en">Conspiracy</span></div><div class="score-bar-container"><div class="score-bar bar-conspiracy" id="bar-consp"></div></div><div class="score-value" id="val-consp">0</div></div>
+                <div class="score-row"><div class="score-label"><span class="zh">理性/勘定指标</span><span class="en">Skeptic</span></div><div class="score-bar-container"><div class="score-bar bar-skeptic" id="bar-skep"></div></div><div class="score-value" id="val-skep">0</div></div>
+                <div class="score-row"><div class="score-label"><span class="zh">元系统/越权指标</span><span class="en">Meta</span></div><div class="score-bar-container"><div class="score-bar bar-meta" id="bar-meta"></div></div><div class="score-value" id="val-meta">0</div></div>
+            </div>
+
+            <div class="profile-section">
+                <div class="profile-title"><span class="zh">主导行为模式测写</span><span class="en">DOMINANT PROFILE</span></div>
+                <div class="profile-content" id="profileText"></div>
+            </div>
+
+            <div class="log-section">
+                <div style="color: #10b981;"><span class="zh">近期活动指纹提取：</span><span class="en">RECENT ACTIVITY FINGERPRINTS:</span></div>
+                <ul class="log-list" id="activityLog"></ul>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <span style="color:#10b981;">root@ht-server:~# </span><span class="cursor" id="cursor"></span>
+            </div>
+
+            <div id="hijack-overlay">
+                <div id="countdown-text"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const savedLang = localStorage.getItem('gameLanguage') || 'zh';
+            document.body.className = 'lang-' + savedLang;
+            const isEn = savedLang === 'en';
+
+            const s_consp = parseInt(localStorage.getItem('score_conspiracy') || '0');
+            const s_skep  = parseInt(localStorage.getItem('score_skeptic') || '0');
+            const s_meta  = parseInt(localStorage.getItem('score_meta') || '0');
+
+            document.getElementById('bar-consp').style.width = Math.min(s_consp * 10, 100) + '%';
+            document.getElementById('bar-skep').style.width = Math.min(s_skep * 10, 100) + '%';
+            document.getElementById('bar-meta').style.width = Math.min(s_meta * 10, 100) + '%';
+
+            document.getElementById('val-consp').innerText = s_consp;
+            document.getElementById('val-skep').innerText = s_skep;
+            document.getElementById('val-meta').innerText = s_meta;
+
+            const profileElement = document.getElementById('profileText');
+            let maxScore = Math.max(s_consp, s_skep, s_meta);
+            let targetEnding = 'ending_B.html'; // Default to Skeptic
+            
+            if (maxScore === s_meta && s_meta > 0) {
+                targetEnding = 'ending_C.html';
+                profileElement.innerHTML = isEn 
+                    ? "<span style='color:#10b981;'>[ DOMINANT: BOUNDARY VIOLATION ]</span><br>DANGER. Subject is attempting to breach system boundaries." 
+                    : "<span style='color:#10b981;'>【主导：系统越权 / 观察者效应】</span><br>危险警告。观测对象表现出强烈的打破“第四面墙”倾向。";
+            } else if (maxScore === s_consp && s_consp > 0) {
+                targetEnding = 'ending_A.html';
+                profileElement.innerHTML = isEn 
+                    ? "<span style='color:#ff6b6b;'>[ DOMINANT: PARANOIA / CONSPIRACY ]</span><br>Subject displays strong subjective correlation bias, seeking crime in rituals." 
+                    : "<span style='color:#ff6b6b;'>【主导：偏执妄想 / 模式固着】</span><br>观测对象展现出过度关联倾向。习惯在民俗事件中寻找犯罪阴谋。";
+            } else {
+                targetEnding = 'ending_B.html';
+                profileElement.innerHTML = isEn 
+                    ? "<span style='color:#4dabf7;'>[ DOMINANT: RATIONAL DECONSTRUCTION ]</span><br>Subject remains objective, trusting physical evidence and logic." 
+                    : "<span style='color:#4dabf7;'>【主导：绝对理性 / 技术勘误】</span><br>观测对象保持极端冷静，倾向于通过物理和逻辑解构异常现象。";
+            }
+
+            const logElement = document.getElementById('activityLog');
+            if(localStorage.getItem('wechatOpened') === 'true') logElement.innerHTML += `<li>${isEn?"Accessed WeChat cache.":"访问了通信缓存(WeChat)"}</li>`;
+            if(localStorage.getItem('viewed_file001') === 'true') logElement.innerHTML += `<li>${isEn?"Investigated Water Gazetteer.":"查阅了水利志地理档案"}</li>`;
+            if(localStorage.getItem('scored_exif') === 'true') logElement.innerHTML += `<li>${isEn?"Extracted EXIF metadata.":"提取了EXIF修图痕迹"}</li>`;
+
+            // 5秒后启动结局路由跳转
+            setTimeout(() => {
+                triggerEnding(targetEnding, isEn);
+            }, 4000);
+        };
+
+        function triggerEnding(url, isEn) {
+            const overlay = document.getElementById('hijack-overlay');
+            const cdText = document.getElementById('countdown-text');
+            overlay.style.display = 'flex';
+            
+            let count = 3;
+            const timer = setInterval(() => {
+                cdText.innerHTML = isEn ? `EXECUTING PROTOCOL IN... ${count}` : `正在重定向终端权限... ${count}`;
+                count--;
+                if(count < 0) {
+                    clearInterval(timer);
+                    window.location.href = url; // 路由跳转核心代码
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

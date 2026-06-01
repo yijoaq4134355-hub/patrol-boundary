@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>结局 B</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "PingFang SC", sans-serif; }
+        body { background-color: #0a0a0a; color: #ccc; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .lang-en .zh { display: none; } .lang-zh .en { display: none; }
+        
+        .story-container { width: 800px; padding: 40px; font-size: 16px; line-height: 2; text-align: justify; }
+        .paragraph { opacity: 0; transform: translateY(20px); animation: fadeUp 2s forwards; margin-bottom: 25px; }
+        .delay-1 { animation-delay: 1s; } .delay-2 { animation-delay: 4s; } .delay-3 { animation-delay: 8s; }
+        
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+        
+        .final-board { margin-top: 40px; background: #fff; padding: 20px; color: #000; font-family: serif; border-left: 4px solid #3b82f6; }
+        .comment { font-size: 14px; color: #666; font-family: sans-serif; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;}
+    </style>
+</head>
+<body id="body-container">
+    <div class="story-container">
+        <div class="paragraph delay-1">
+            <span class="zh">林砚在笔记本上写下：“我无法证明任何事。也许根本没有犯罪，也许有，但我没找到。我选择不发表。”<br>他离开鹤田村，论文延期，后来转行做了公务员。</span>
+            <span class="en">Lin Yan writes in his notebook: "I cannot prove anything. Maybe there is no crime, maybe there is, but I didn't find it. I choose not to publish."<br>He leaves Hetian Village, delays his graduation, and later changes careers to become a civil servant.</span>
+        </div>
+        <div class="paragraph delay-2">
+            <span class="zh">几年后，他在网上看到另一篇论文，作者是一个不认识的学者。那篇论文引用了林砚当年在论坛上随手发过的一些公开材料，得出了完整的“犯罪集团论”，并因此获得了一个奖项。林砚盯着屏幕很久，然后关掉电脑。</span>
+            <span class="en">Years later, he sees another paper online by an unknown scholar. That paper cited some public materials Lin Yan casually posted on a forum back then, formulated a complete "crime syndicate theory", and won an award for it. Lin Yan stares at the screen for a long time, then shuts down his computer.</span>
+        </div>
+        <div class="paragraph delay-3">
+            <div class="final-board">
+                <h3 style="margin-bottom: 10px;"><span class="zh">《巡境与走私：鹤田村的隐蔽秩序》 摘要</span><span class="en">Abstract: Patrol and Smuggling: The Hidden Order of Hetian Village</span></h3>
+                <p style="font-size: 14px;"><span class="zh">本文通过对鹤田村空间叙事的重构，揭示了底层仪式的黑色经济……</span><span class="en">Through reconstructing the spatial narrative of Hetian Village, this paper reveals the black economy of grassroots rituals...</span></p>
+                <div class="comment">
+                    <span class="zh">网友跟帖：这研究真有意思。</span><span class="en">User Comment: This research is really interesting.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script> document.getElementById('body-container').className = 'lang-' + (localStorage.getItem('gameLanguage') || 'zh'); </script>
+</body>
+</html>
